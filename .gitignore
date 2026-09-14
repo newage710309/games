@@ -1,0 +1,8 @@
+# 全ゲーム共通の除外設定。
+# 各ゲームのフォルダを単体で持ち出しても動くよう、ゲーム側の .gitignore も残してある。
+
+node_modules/
+dist/
+*.local
+.DS_Store
+Thumbs.db
