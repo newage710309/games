@@ -13,6 +13,12 @@ export interface LaneDef {
   readonly count: number;
   /** オブジェクトの開始位置どうしの間隔（px）。 */
   readonly spacing: number;
+  /**
+   * 1 周の長さ（px）。省略時は spacing * count で、全台が等間隔に並ぶ。
+   * spacing * count より長くすると、車間はそのままで 1 周に 1 か所だけ
+   * 大きな空きができる（台数を間引いて難易度を下げるときに使う）。
+   */
+  readonly period?: number;
   /** 初期位置のずらし（px）。 */
   readonly offset: number;
   /** 潜る亀にするインデックス（kind === 'turtle' のときのみ）。 */
@@ -48,11 +54,13 @@ export const LANES: readonly LaneDef[] = [
   { row: ROW_WATER_FIRST + 4, kind: 'turtle', speed: -80, cells: 2, count: 4, spacing: 160, offset: 100, divers: [0], color: '#46b077' },
 
   // --- 道路（下側）---
-  { row: ROW_ROAD_FIRST + 0, kind: 'car', speed: -170, cells: 1, count: 4, spacing: 160, offset: 0, color: '#f0d24a' },
-  { row: ROW_ROAD_FIRST + 1, kind: 'truck', speed: 110, cells: 2, count: 3, spacing: 220, offset: 80, color: '#d8dee9' },
-  { row: ROW_ROAD_FIRST + 2, kind: 'car', speed: -130, cells: 1, count: 3, spacing: 200, offset: 40, color: '#7ad3ff' },
-  { row: ROW_ROAD_FIRST + 3, kind: 'car', speed: 150, cells: 1, count: 4, spacing: 150, offset: 20, color: '#ff7a7a' },
-  { row: ROW_ROAD_FIRST + 4, kind: 'car', speed: -95, cells: 1, count: 3, spacing: 210, offset: 120, color: '#c39bff' }
+  // 難易度調整のため各レーン 1 台ずつ間引いている。period は間引く前の
+  // spacing * count のまま据え置き、車間を変えずに 1 台ぶんの空きを作る。
+  { row: ROW_ROAD_FIRST + 0, kind: 'car', speed: -170, cells: 1, count: 3, spacing: 160, period: 640, offset: 0, color: '#f0d24a' },
+  { row: ROW_ROAD_FIRST + 1, kind: 'truck', speed: 110, cells: 2, count: 2, spacing: 220, period: 660, offset: 80, color: '#d8dee9' },
+  { row: ROW_ROAD_FIRST + 2, kind: 'car', speed: -130, cells: 1, count: 2, spacing: 200, period: 600, offset: 40, color: '#7ad3ff' },
+  { row: ROW_ROAD_FIRST + 3, kind: 'car', speed: 150, cells: 1, count: 3, spacing: 150, period: 600, offset: 20, color: '#ff7a7a' },
+  { row: ROW_ROAD_FIRST + 4, kind: 'car', speed: -95, cells: 1, count: 2, spacing: 210, period: 630, offset: 120, color: '#c39bff' }
 ];
 
 const DIVE_CYCLE = 7.5;
@@ -66,14 +74,17 @@ function diveStateAt(t: number, phase: number): DiveState {
   return 'rising';
 }
 
+/** 1 周の長さ。period 未指定なら全台が等間隔になる長さ。 */
+export const lanePeriod = (lane: LaneDef): number => lane.period ?? lane.spacing * lane.count;
+
 /**
  * 指定レーンのオブジェクト矩形を求める。
- * 位置はレーン全体を等間隔にスクロールさせ、total で折り返すだけなので
+ * 位置はレーン全体をスクロールさせ、1 周の長さで折り返すだけなので
  * 生成・破棄が不要でメモリも一定。
  */
 export function laneObjects(lane: LaneDef, elapsed: number, speedMul: number): LaneObject[] {
   const w = lane.cells * CELL;
-  const total = lane.spacing * lane.count;
+  const total = lanePeriod(lane);
   const scroll = lane.offset + lane.speed * speedMul * elapsed;
   const y = rowY(lane.row);
   const out: LaneObject[] = [];
@@ -92,14 +103,22 @@ export function laneObjects(lane: LaneDef, elapsed: number, speedMul: number): L
 export const isWaterLane = (lane: LaneDef): boolean =>
   lane.kind === 'log' || lane.kind === 'turtle';
 
-/** レーンの折り返し幅が画面をカバーできているかの自己診断（開発時のみ使用）。 */
+/** レーン定義の自己診断（開発時のみ使用）。 */
 export function validateLanes(): string[] {
   const errors: string[] = [];
   for (const lane of LANES) {
+    const period = lanePeriod(lane);
+
+    // 1 周が画面より短いと、車が画面の中で急に現れたり消えたりする。
     const need = WIDTH + lane.cells * CELL;
-    const total = lane.spacing * lane.count;
-    if (total < need) {
-      errors.push(`row ${lane.row}: spacing*count=${total} < ${need}`);
+    if (period < need) {
+      errors.push(`row ${lane.row}: period=${period} < 画面幅+車幅=${need}`);
+    }
+
+    // 1 周が spacing * count より短いと、折り返し部分の車間が詰まる。
+    const minPeriod = lane.spacing * lane.count;
+    if (period < minPeriod) {
+      errors.push(`row ${lane.row}: period=${period} < spacing*count=${minPeriod}`);
     }
   }
   return errors;
