@@ -286,23 +286,22 @@ function drawVehicle(
 // --- さくらちゃん（プレイヤー） ------------------------------------------
 
 const SAKURA = {
-  bodyLight: '#fff4f7',
-  bodyMid: '#f8d9e1',
-  bodyEdge: '#eebccb',
-  outline: 'rgba(130,60,85,0.4)',
-  wing: '#eab0c1',
+  bodyLight: '#fff6f8',
+  body: '#fbe1e8',
+  line: '#5e3448', // 手描き風の輪郭線（濃いめの梅色）
+  wing: '#262024', // 黒い翼（真っ黒より少しだけ温かみのある黒）
+  wingFeather: 'rgba(255,255,255,0.6)',
   ink: '#1c1418',
-  beak: '#5a4a4f',
-  cheek: 'rgba(240,110,145,0.32)',
-  petal: '#f47fa4',
-  petalEdge: 'rgba(255,255,255,0.85)',
+  beak: '#3a2a30',
+  cheek: 'rgba(242,120,150,0.6)',
+  petal: '#f283a8',
   flowerCenter: '#d94d78',
   stamen: '#ffe38a',
-  shadow: 'rgba(0,0,0,0.2)'
+  shadow: 'rgba(0,0,0,0.18)'
 } as const;
 
 export interface BirdOptions {
-  /** 目線の向き。-1 = 左、0 = 正面、1 = 右。進む方向へ目とくちばしを寄せる。 */
+  /** 目線の向き。-1 = 左、0 = 正面、1 = 右。進む方向へ顔のパーツを寄せる。 */
   gaze?: number;
   /** 0..1 のホップ進行度。跳んでいる間だけ少し膨らむ。 */
   hopP?: number;
@@ -313,21 +312,43 @@ export interface BirdOptions {
 
 const gazeOf = (facing: Direction): number => (facing === 'left' ? -1 : facing === 'right' ? 1 : 0);
 
-/** 桜の花。5 枚の花びらを中心から放射状に並べる。 */
+/** ベジェ曲線で楕円の 1/4 を近似するときの係数。 */
+const KAPPA = 0.5523;
+
+/**
+ * 体の輪郭。頭は丸く、下半分がふっくら広がる「おもち」形。
+ * いちばん太い所（y = 7）から下は楕円の弧にして、底を丸くしている。
+ * 右半分を描いてから左右対称に閉じる。
+ */
+function bodyPath(ctx: CanvasRenderingContext2D): void {
+  const a = 14.3; // いちばん太い所の半幅
+  const cy = 7; // いちばん太い所の高さ
+  const b = 9; // そこから底までの高さ
+  ctx.beginPath();
+  ctx.moveTo(0, -12.8);
+  ctx.bezierCurveTo(7.6, -12.8, 11.4, -8.2, 12.0, -3.0);
+  ctx.bezierCurveTo(12.6, 1.8, a, 4.2, a, cy);
+  ctx.bezierCurveTo(a, cy + KAPPA * b, KAPPA * a, cy + b, 0, cy + b);
+  ctx.bezierCurveTo(-KAPPA * a, cy + b, -a, cy + KAPPA * b, -a, cy);
+  ctx.bezierCurveTo(-a, 4.2, -12.6, 1.8, -12.0, -3.0);
+  ctx.bezierCurveTo(-11.4, -8.2, -7.6, -12.8, 0, -12.8);
+  ctx.closePath();
+}
+
+/** 桜の花。5 枚の花びらを中心から放射状に並べ、輪郭線で手描き風にそろえる。 */
 function drawSakuraFlower(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number): void {
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(-0.25);
   for (let k = 0; k < 5; k++) {
-    const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
     ctx.save();
-    ctx.rotate(a);
+    ctx.rotate((k / 5) * Math.PI * 2 - Math.PI / 2);
     ctx.beginPath();
     ctx.ellipse(r * 0.55, 0, r * 0.55, r * 0.4, 0, 0, Math.PI * 2);
     ctx.fillStyle = SAKURA.petal;
     ctx.fill();
-    ctx.strokeStyle = SAKURA.petalEdge;
-    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = SAKURA.line;
+    ctx.lineWidth = 0.7;
     ctx.stroke();
     ctx.restore();
   }
@@ -344,8 +365,9 @@ function drawSakuraFlower(ctx: CanvasRenderingContext2D, cx: number, cy: number,
 
 /**
  * さくらちゃん（桜色のシマエナガ）を描く。(x, y) はセルの左上。
- * 正面向きのぬいぐるみ風。桜の花飾りは常に向かって右に付けるので、
- * 左右反転はせず、目とくちばしだけを進む方向へ寄せて向きを表す。
+ * 手描きの絵本風：下ぶくれで底の丸い体、濃い輪郭線、離れた点の目とほっぺ、
+ * 脇の小さな黒い翼。足と尾羽はなし。花飾りは常に向かって右に付けるので
+ * 左右反転はせず、顔のパーツだけを進む方向へ寄せて向きを表す。
  */
 export function drawBird(
   ctx: CanvasRenderingContext2D,
@@ -360,76 +382,110 @@ export function drawBird(
   ctx.save();
   ctx.translate(x + CELL / 2, y + CELL / 2);
   ctx.scale(scale * pop, scale * pop);
+  ctx.translate(0, -1.5); // 体が下に長い分、セルの中央に見えるよう少し持ち上げる
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
 
   // 足元の影。
   ctx.fillStyle = SAKURA.shadow;
   ctx.beginPath();
-  ctx.ellipse(0, 13.5, 10, 2.2, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 16.6, 11, 1.9, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // 両脇の小さな翼。体の後ろから少しだけのぞかせる。
-  ctx.fillStyle = SAKURA.wing;
-  ctx.beginPath();
-  ctx.ellipse(-12, 4.5, 3, 5, 0.35, 0, Math.PI * 2);
-  ctx.ellipse(12, 4.5, 3, 5, -0.35, 0, Math.PI * 2);
-  ctx.fill();
-
-  // まんまるの体。左上から光が当たったような、ふわっとしたグラデーション。
-  const grad = ctx.createRadialGradient(-4, -4, 2, 0, 1.5, 14);
+  // 体。左上がほんのり明るい。
+  const grad = ctx.createRadialGradient(-4, -6, 1, 0, 2, 16);
   grad.addColorStop(0, SAKURA.bodyLight);
-  grad.addColorStop(0.55, SAKURA.bodyMid);
-  grad.addColorStop(1, SAKURA.bodyEdge);
+  grad.addColorStop(1, SAKURA.body);
   ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.ellipse(0, 1.5, 13.5, 12, 0, 0, Math.PI * 2);
+  bodyPath(ctx);
   ctx.fill();
-  ctx.strokeStyle = SAKURA.outline;
-  ctx.lineWidth = 1;
+
+  // 手描き風の輪郭：本線に、わずかにずらした途切れ線を薄く重ねる。
+  // 毎フレーム同じ形になるよう乱数は使わない。
+  ctx.strokeStyle = SAKURA.line;
+  ctx.lineWidth = 1.2;
+  bodyPath(ctx);
   ctx.stroke();
+  ctx.save();
+  ctx.globalAlpha *= 0.45;
+  ctx.translate(0.5, -0.3);
+  ctx.setLineDash([26, 7]);
+  bodyPath(ctx);
+  ctx.stroke();
+  ctx.restore();
+
+  // 体の両脇の小さな切れ込み（羽毛のふわふわ感）。
+  ctx.lineWidth = 0.9;
+  ctx.beginPath();
+  ctx.moveTo(-12.4, 0.6);
+  ctx.lineTo(-10.9, 1.9);
+  ctx.lineTo(-12.7, 3.0);
+  ctx.moveTo(12.3, -0.4);
+  ctx.lineTo(10.8, 0.9);
+  ctx.lineTo(12.6, 2.0);
+  ctx.stroke();
+
+  // 翼：脇の下のほうに黒い羽先。羽の線は白っぽくして縁取りに見せる。
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.scale(side, 1);
+    ctx.beginPath();
+    ctx.moveTo(9.6, 4.4);
+    ctx.quadraticCurveTo(13.4, 7.2, 12.0, 11.4);
+    ctx.quadraticCurveTo(9.9, 9.6, 9.6, 4.4);
+    ctx.closePath();
+    ctx.fillStyle = SAKURA.wing;
+    ctx.fill();
+    ctx.strokeStyle = SAKURA.line;
+    ctx.lineWidth = 0.9;
+    ctx.stroke();
+    ctx.strokeStyle = SAKURA.wingFeather;
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(10.7, 7.4);
+    ctx.lineTo(12.1, 8.3);
+    ctx.stroke();
+    ctx.restore();
+  }
 
   // ほっぺ。
   ctx.fillStyle = SAKURA.cheek;
   ctx.beginPath();
-  ctx.ellipse(-7.5 + fx, 3.2, 2.3, 1.4, 0, 0, Math.PI * 2);
-  ctx.ellipse(7.5 + fx, 3.2, 2.3, 1.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(-8.4 + fx, 2.4, 2.4, 1.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(8.4 + fx, 2.4, 2.4, 1.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // 目：小さな点。
+  // 目：離れ気味の小さな点。
   if (dead) {
     ctx.strokeStyle = SAKURA.ink;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.3;
     ctx.beginPath();
-    for (const ex of [-4.5, 4.5]) {
-      ctx.moveTo(ex - 1.8, -1.8);
-      ctx.lineTo(ex + 1.8, 1.8);
-      ctx.moveTo(ex + 1.8, -1.8);
-      ctx.lineTo(ex - 1.8, 1.8);
+    for (const ex of [-5.8, 5.8]) {
+      ctx.moveTo(ex - 1.7, -4.1);
+      ctx.lineTo(ex + 1.7, -0.7);
+      ctx.moveTo(ex + 1.7, -4.1);
+      ctx.lineTo(ex - 1.7, -0.7);
     }
     ctx.stroke();
   } else {
     ctx.fillStyle = SAKURA.ink;
     ctx.beginPath();
-    ctx.arc(-4.5 + fx, 0, 1.5, 0, Math.PI * 2);
-    ctx.arc(4.5 + fx, 0, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    ctx.beginPath();
-    ctx.arc(-4 + fx, -0.5, 0.5, 0, Math.PI * 2);
-    ctx.arc(5 + fx, -0.5, 0.5, 0, Math.PI * 2);
+    ctx.arc(-5.8 + fx, -2.4, 1.35, 0, Math.PI * 2);
+    ctx.arc(5.8 + fx, -2.4, 1.35, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // ちょこんとした小さいくちばし。
+  // 小さな三角のくちばし。
   ctx.fillStyle = SAKURA.beak;
   ctx.beginPath();
-  ctx.moveTo(-1.7 + fx, 2);
-  ctx.lineTo(1.7 + fx, 2);
-  ctx.lineTo(fx, 4.3);
+  ctx.moveTo(-1.3 + fx, -0.2);
+  ctx.lineTo(1.3 + fx, -0.2);
+  ctx.lineTo(fx, 1.6);
   ctx.closePath();
   ctx.fill();
 
   // 向かって右の頭に桜の花飾り。
-  drawSakuraFlower(ctx, 7.5, -7.5, 4.7);
+  drawSakuraFlower(ctx, 6.4, -9.6, 4.6);
 
   ctx.restore();
 }
