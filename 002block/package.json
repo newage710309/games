@@ -1,0 +1,20 @@
+{
+  "name": "shimaenaga-block",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "シマエナガのブロックくずし - ブロックを崩すとシマエナガのイラストが現れる (TypeScript + Vite + Canvas2D)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
+}
