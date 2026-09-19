@@ -323,7 +323,11 @@ function drawAllClear(ctx: CanvasRenderingContext2D, game: Game): void {
 function drawGameOver(ctx: CanvasRenderingContext2D, game: Game): void {
   text(ctx, 'ゲームオーバー', WIDTH / 2, 410, 30, '#ff8f9f', true);
   const left = game.bricksLeft;
-  text(ctx, `あと ${left} こ で「${game.stage.title}」が見えるよ`, WIDTH / 2, 450, 14, COLOR.ink);
+  text(ctx, `あと ${left} こ で「${game.stage.title}」が見えるよ`, WIDTH / 2, 446, 14, COLOR.ink);
+  // 2 面以降のコンティニューはスコアが 0 に戻るので、押す前に知らせる
+  if (game.stageIndex > 0) {
+    text(ctx, 'やりなおすと スコアは 0 からになります', WIDTH / 2, 470, 12, COLOR.muted);
+  }
   game.buttons.forEach((b, i) => drawButton(ctx, b, i === 0));
   if (!isTouch()) text(ctx, 'SPACE：やりなおす ・ Esc：タイトルへ', WIDTH / 2, 562, 12, COLOR.muted);
 }

@@ -118,7 +118,6 @@ export class Game {
   readonly ball = { x: WIDTH / 2, y: PADDLE_Y - BALL_R, vx: 0, vy: 0 };
 
   private keyDir = 0;
-  private stageStartScore = 0;
   private pausedFrom: Phase = 'playing';
 
   constructor(private readonly audio: Audio) {
@@ -272,7 +271,6 @@ export class Game {
 
   private startStage(i: number): void {
     this.stageIndex = i;
-    this.stageStartScore = this.score;
     this.buildBricks(false);
     this.particles = [];
     this.paddle.w = this.paddleWidthFor(this.difficultyIndex, i);
@@ -280,9 +278,13 @@ export class Game {
     this.serve();
   }
 
+  /**
+   * ゲームオーバーからのコンティニュー。同じ面を最初からやりなおし、スコアは 0 に戻す
+   * （それまでの点数はゲームオーバーの時点でハイスコアに記録済み）。
+   */
   private retryStage(): void {
     this.lives = START_LIVES;
-    this.score = this.stageStartScore;
+    this.score = 0;
     this.startStage(this.stageIndex);
   }
 
