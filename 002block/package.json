@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "シマエナガのブロックくずし - ブロックを崩すとシマエナガのイラストが現れる (TypeScript + Vite + Canvas2D)",
+  "description": "さくらちゃんのブロックくずし - ブロックを崩すとシマエナガのイラストが現れる (TypeScript + Vite + Canvas2D)",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

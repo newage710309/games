@@ -7,17 +7,24 @@ export const HUD_H = 40;
 
 /**
  * ブロックを並べる領域。ここにイラストが隠れていて、ブロックを崩すと見えてくる。
- * 8 列 × 12 段 = 96 個。
+ * 8 列 × 10 段 = 80 個（1 面が長くなりすぎないよう、12 段 96 個から減らした）。
  */
 export const BRICK_COLS = 8;
-export const BRICK_ROWS = 12;
+export const BRICK_ROWS = 10;
 export const BRICK_W = 56;
-export const BRICK_H = 24;
+export const BRICK_H = 28;
+
+/**
+ * 天井（HUD の下端）と、いちばん上の段とのすき間。
+ * ボールがブロックの上に抜けると、天井とブロックの間で跳ね返りながら連続で崩せる。
+ */
+export const TOP_GAP = 48;
+
 export const PICTURE = {
   x: (WIDTH - BRICK_COLS * BRICK_W) / 2, // 16
-  y: 56,
+  y: HUD_H + TOP_GAP, // 88
   w: BRICK_COLS * BRICK_W, // 448
-  h: BRICK_ROWS * BRICK_H // 288
+  h: BRICK_ROWS * BRICK_H // 280
 } as const;
 
 /** ラケット。 */

@@ -1,8 +1,10 @@
 /**
  * ブロックの下に隠れているイラスト。画像ファイルは使わず、すべて Canvas2D で描く。
- * 各イラストは PICTURE（448×288）の左上を原点とした座標で描く。
+ * 各イラストは PICTURE（448×280）の左上を原点とした座標で描く。
  * 雪や花びらは経過時間 t でゆっくり動く（崩したところから動いているのが見える）。
  */
+
+import { PICTURE } from './constants';
 
 // --- シマエナガ ---------------------------------------------------------
 
@@ -297,8 +299,9 @@ function seeded(seed: number): () => number {
   };
 }
 
-const W = 448;
-const H = 288;
+// イラストの大きさ = ブロックを並べる領域の大きさ（448×280）
+const W = PICTURE.w;
+const H = PICTURE.h;
 
 function skyGradient(ctx: CanvasRenderingContext2D, top: string, bottom: string): void {
   const g = ctx.createLinearGradient(0, 0, 0, H);

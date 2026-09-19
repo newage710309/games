@@ -64,17 +64,17 @@ const DIFFICULTY_BUTTONS: readonly Button[] = DIFFICULTIES.map((d, i) => ({
   id: d.id,
   label: d.label,
   x: 26 + i * 146,
-  y: 486,
+  y: 492,
   w: 136,
   h: 72
 }));
 
 const GAMEOVER_BUTTONS: readonly Button[] = [
-  { id: 'retry', label: 'このステージをやりなおす', x: 54, y: 476, w: 220, h: 52 },
-  { id: 'title', label: 'タイトルへ', x: 286, y: 476, w: 140, h: 52 }
+  { id: 'retry', label: 'このステージをやりなおす', x: 54, y: 490, w: 220, h: 52 },
+  { id: 'title', label: 'タイトルへ', x: 286, y: 490, w: 140, h: 52 }
 ];
 
-const ALLCLEAR_BUTTONS: readonly Button[] = [{ id: 'title', label: 'タイトルへ', x: 150, y: 500, w: 180, h: 52 }];
+const ALLCLEAR_BUTTONS: readonly Button[] = [{ id: 'title', label: 'タイトルへ', x: 150, y: 510, w: 180, h: 52 }];
 
 /** タイトル画面で、ブロックに穴をあけてイラストをちょっとだけ見せる範囲（鳥の顔のあたり）。 */
 const TEASER_HOLE = { cx: PICTURE.x + 224, cy: PICTURE.y + 128, rx: 96, ry: 64 };

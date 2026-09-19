@@ -243,10 +243,10 @@ function drawButton(ctx: CanvasRenderingContext2D, b: Button, primary: boolean):
 }
 
 function drawTitle(ctx: CanvasRenderingContext2D, game: Game): void {
-  text(ctx, 'シマエナガの', WIDTH / 2, 374, 18, COLOR.pink, true);
-  text(ctx, 'ブロックくずし', WIDTH / 2, 406, 34, COLOR.ink, true);
-  text(ctx, 'ブロックをくずすと、シマエナガのイラストが見えてくるよ', WIDTH / 2, 442, 13, COLOR.muted);
-  text(ctx, 'むずかしさ（ラケットの長さ）をえらんでね', WIDTH / 2, 470, 13, COLOR.ink);
+  text(ctx, 'さくらちゃんの', WIDTH / 2, 390, 18, COLOR.pink, true);
+  text(ctx, 'ブロックくずし', WIDTH / 2, 424, 34, COLOR.ink, true);
+  text(ctx, 'ブロックをくずすと、シマエナガのイラストが見えてくるよ', WIDTH / 2, 456, 13, COLOR.muted);
+  text(ctx, 'むずかしさ（ラケットの長さ）をえらんでね', WIDTH / 2, 478, 13, COLOR.ink);
 
   game.buttons.forEach((b, i) => {
     const d = DIFFICULTIES[i]!;
@@ -267,17 +267,17 @@ function drawTitle(ctx: CanvasRenderingContext2D, game: Game): void {
   });
 
   const prompt = isTouch() ? 'えらんでタップすると スタート' : 'クリック または SPACE で スタート';
-  if (blink(game.elapsed)) text(ctx, prompt, WIDTH / 2, 584, 15, COLOR.ink, true);
-  if (!isTouch()) text(ctx, '← → でえらぶ ・ マウス / ← → でラケットをうごかす', WIDTH / 2, 614, 12, COLOR.muted);
+  if (blink(game.elapsed)) text(ctx, prompt, WIDTH / 2, 590, 15, COLOR.ink, true);
+  if (!isTouch()) text(ctx, '← → でえらぶ ・ マウス / ← → でラケットをうごかす', WIDTH / 2, 618, 12, COLOR.muted);
 }
 
 function drawServe(ctx: CanvasRenderingContext2D, game: Game): void {
   // ステージの最初だけ、ステージ番号を大きく出す
   if (game.bricksLeft === game.bricks.length) {
-    text(ctx, `STAGE ${game.stageIndex + 1}`, WIDTH / 2, 420, 30, COLOR.pink, true);
+    text(ctx, `STAGE ${game.stageIndex + 1}`, WIDTH / 2, 444, 30, COLOR.pink, true);
   }
   if (blink(game.elapsed)) {
-    text(ctx, isTouch() ? 'タップで はっしゃ' : 'クリック / SPACE で はっしゃ', WIDTH / 2, 500, 15, COLOR.ink, true);
+    text(ctx, isTouch() ? 'タップで はっしゃ' : 'クリック / SPACE で はっしゃ', WIDTH / 2, 512, 15, COLOR.ink, true);
   }
 }
 
@@ -289,26 +289,26 @@ function drawPaused(ctx: CanvasRenderingContext2D): void {
 }
 
 function drawStageClear(ctx: CanvasRenderingContext2D, game: Game): void {
-  text(ctx, `ステージ ${game.stageIndex + 1} クリア！`, WIDTH / 2, 392, 28, COLOR.pink, true);
-  text(ctx, `「${game.stage.title}」`, WIDTH / 2, 430, 20, COLOR.ink, true);
-  text(ctx, `のこりボール ボーナス +${game.lives * SCORE_LIFE_BONUS}`, WIDTH / 2, 466, 14, COLOR.muted);
+  text(ctx, `ステージ ${game.stageIndex + 1} クリア！`, WIDTH / 2, 408, 28, COLOR.pink, true);
+  text(ctx, `「${game.stage.title}」`, WIDTH / 2, 444, 20, COLOR.ink, true);
+  text(ctx, `のこりボール ボーナス +${game.lives * SCORE_LIFE_BONUS}`, WIDTH / 2, 478, 14, COLOR.muted);
   if (game.clearReady && blink(game.phaseTime)) {
-    text(ctx, isTouch() ? 'タップで つぎのステージへ' : 'クリック / SPACE で つぎのステージへ', WIDTH / 2, 530, 15, COLOR.ink, true);
+    text(ctx, isTouch() ? 'タップで つぎのステージへ' : 'クリック / SPACE で つぎのステージへ', WIDTH / 2, 540, 15, COLOR.ink, true);
   }
 }
 
 function drawAllClear(ctx: CanvasRenderingContext2D, game: Game): void {
-  text(ctx, 'ぜんぶクリア！', WIDTH / 2, 382, 30, COLOR.pink, true);
-  text(ctx, `「${game.stage.title}」`, WIDTH / 2, 418, 18, COLOR.ink, true);
-  text(ctx, `${game.stageCount} まいのイラストを ぜんぶ見つけたよ。おめでとう！`, WIDTH / 2, 448, 13, COLOR.muted);
-  text(ctx, `スコア ${game.score}　・　HI ${game.highScore}`, WIDTH / 2, 474, 15, COLOR.ink, true);
+  text(ctx, 'ぜんぶクリア！', WIDTH / 2, 400, 30, COLOR.pink, true);
+  text(ctx, `「${game.stage.title}」`, WIDTH / 2, 434, 18, COLOR.ink, true);
+  text(ctx, `${game.stageCount} まいのイラストを ぜんぶ見つけたよ。おめでとう！`, WIDTH / 2, 462, 13, COLOR.muted);
+  text(ctx, `スコア ${game.score}　・　HI ${game.highScore}`, WIDTH / 2, 486, 15, COLOR.ink, true);
   for (const b of game.buttons) drawButton(ctx, b, true);
 }
 
 function drawGameOver(ctx: CanvasRenderingContext2D, game: Game): void {
-  text(ctx, 'ゲームオーバー', WIDTH / 2, 396, 30, '#ff8f9f', true);
+  text(ctx, 'ゲームオーバー', WIDTH / 2, 410, 30, '#ff8f9f', true);
   const left = game.bricksLeft;
-  text(ctx, `あと ${left} こ で「${game.stage.title}」が見えるよ`, WIDTH / 2, 436, 14, COLOR.ink);
+  text(ctx, `あと ${left} こ で「${game.stage.title}」が見えるよ`, WIDTH / 2, 450, 14, COLOR.ink);
   game.buttons.forEach((b, i) => drawButton(ctx, b, i === 0));
-  if (!isTouch()) text(ctx, 'SPACE：やりなおす ・ Esc：タイトルへ', WIDTH / 2, 552, 12, COLOR.muted);
+  if (!isTouch()) text(ctx, 'SPACE：やりなおす ・ Esc：タイトルへ', WIDTH / 2, 562, 12, COLOR.muted);
 }
