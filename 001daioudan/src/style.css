@@ -64,6 +64,16 @@ html, body {
   line-height: 1.7;
 }
 
+/* ゲームメニュー（/games/）へ戻るリンク */
+.to-menu {
+  color: var(--ink);
+  text-decoration: none;
+}
+.to-menu:hover,
+.to-menu:focus-visible {
+  text-decoration: underline;
+}
+
 kbd {
   background: var(--panel);
   border: 1px solid #2a3c68;

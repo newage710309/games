@@ -98,6 +98,8 @@ src/
     audio.ts           WebAudio の発振器だけで鳴らす効果音（音量は MASTER_GAIN_*）
     storage.ts         ハイスコアの保存
     device.ts          タッチ端末かどうかの判定（案内文と音量の切り替えに使う）
+public/
+  thumbnail.webp       ゲームメニュー（/games/）用のサムネイル。ビルドで dist/ 直下に出る
 ```
 
 ### 設計メモ
