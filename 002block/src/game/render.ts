@@ -79,7 +79,7 @@ export function render(ctx: CanvasRenderingContext2D, game: Game): void {
       drawServe(ctx, game);
       break;
     case 'paused':
-      drawPaused(ctx);
+      drawPaused(ctx, game);
       break;
     case 'stageClear':
       drawStageClear(ctx, game);
@@ -105,11 +105,16 @@ function drawBackground(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 }
 
-/** ブロックの下に隠れているイラスト。枠の外にはみ出さないようクリップする。 */
+/**
+ * ブロックの下に隠れているイラスト。崩したブロックのところにだけ描く。
+ * ブロックは 1px 内側に寄せて描いているので、絵を全面に描くとブロックどうしのすき間から
+ * 輪郭が透けて、崩す前から鳥の形が分かってしまう（タイトル画面の「右目だけ」も台無しになる）。
+ * ブロックは隙間なく敷き詰めた格子なので、全部崩せば絵全体が見える。
+ */
 function drawPicture(ctx: CanvasRenderingContext2D, game: Game): void {
   ctx.save();
   ctx.beginPath();
-  ctx.rect(PICTURE.x, PICTURE.y, PICTURE.w, PICTURE.h);
+  for (const b of game.bricks) if (!b.alive) ctx.rect(b.x, b.y, b.w, b.h);
   ctx.clip();
   ctx.translate(PICTURE.x, PICTURE.y);
   game.stage.drawPicture(ctx, game.elapsed);
@@ -190,14 +195,16 @@ function drawPaddle(ctx: CanvasRenderingContext2D, cx: number, w: number): void 
   ctx.fill();
 }
 
+/** オレンジ色のボール。ふちに向かって濃くなり、左上に光が当たって見える。 */
 function drawBall(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.fillStyle = 'rgba(255,150,50,0.22)';
   ctx.beginPath();
   ctx.arc(x, y, BALL_R + 4, 0, Math.PI * 2);
   ctx.fill();
   const g = ctx.createRadialGradient(x - 2, y - 2, 1, x, y, BALL_R);
-  g.addColorStop(0, '#ffffff');
-  g.addColorStop(1, '#d9e6f5');
+  g.addColorStop(0, '#ffe2b8');
+  g.addColorStop(0.45, '#ffa63d');
+  g.addColorStop(1, '#f07818');
   ctx.fillStyle = g;
   ctx.beginPath();
   ctx.arc(x, y, BALL_R, 0, Math.PI * 2);
@@ -227,7 +234,7 @@ function drawHud(ctx: CanvasRenderingContext2D, game: Game): void {
   for (let i = 0; i < Math.max(0, game.lives); i++) {
     drawBall(ctx, 58 + i * 18, by);
   }
-  text(ctx, `${game.difficulty.label}・ラケット ${game.paddle.w}px`, WIDTH - 12, by, 12, COLOR.muted, false, 'right');
+  text(ctx, `${game.difficulty.label}（点数×${game.scoreMul}）・ラケット ${game.paddle.w}px`, WIDTH - 12, by, 12, COLOR.muted, false, 'right');
 }
 
 // --- 画面ごとの重ね描き --------------------------------------------------
@@ -257,13 +264,15 @@ function drawTitle(ctx: CanvasRenderingContext2D, game: Game): void {
     ctx.strokeStyle = selected ? COLOR.accent : COLOR.panelBorder;
     ctx.lineWidth = selected ? 3 : 2;
     ctx.stroke();
-    text(ctx, d.label, b.x + b.w / 2, b.y + 18, 16, selected ? COLOR.ink : COLOR.muted, true);
+    text(ctx, d.label, b.x + b.w / 2, b.y + 16, 16, selected ? COLOR.ink : COLOR.muted, true);
     // ラケットの長さを、そのままの比率で見せる
     const pw = game.paddleWidthFor(i, 0) * 0.9;
     ctx.fillStyle = selected ? COLOR.accent : '#6b5a7a';
-    rr(ctx, b.x + (b.w - pw) / 2, b.y + 36, pw, 8, 4);
+    rr(ctx, b.x + (b.w - pw) / 2, b.y + 30, pw, 8, 4);
     ctx.fill();
-    text(ctx, `HI ${loadHighScore(d.id)}`, b.x + b.w / 2, b.y + 58, 11, COLOR.muted);
+    // 難しいほど点数が高い
+    text(ctx, `点数 ×${d.scoreMul}`, b.x + b.w / 2, b.y + 49, 12, selected ? COLOR.pink : COLOR.muted, true);
+    text(ctx, `HI ${loadHighScore(d.id)}`, b.x + b.w / 2, b.y + 63, 10, COLOR.muted);
   });
 
   const prompt = isTouch() ? 'えらんでタップすると スタート' : 'クリック または SPACE で スタート';
@@ -281,17 +290,23 @@ function drawServe(ctx: CanvasRenderingContext2D, game: Game): void {
   }
 }
 
-function drawPaused(ctx: CanvasRenderingContext2D): void {
-  ctx.fillStyle = 'rgba(6,10,24,0.6)';
+/** ポーズ画面。「つづける」「おと：オン／オフ」「タイトルへ」を並べる。 */
+function drawPaused(ctx: CanvasRenderingContext2D, game: Game): void {
+  ctx.fillStyle = 'rgba(6,10,24,0.72)';
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  text(ctx, 'ポーズ', WIDTH / 2, HEIGHT / 2 - 12, 30, COLOR.ink, true);
-  text(ctx, isTouch() ? 'タップで さいかい' : 'P / クリック で さいかい', WIDTH / 2, HEIGHT / 2 + 26, 14, COLOR.muted);
+  text(ctx, 'ポーズ', WIDTH / 2, 216, 30, COLOR.ink, true);
+  for (const b of game.buttons) {
+    const label = b.id === 'mute' ? `おと：${game.muted ? 'オフ' : 'オン'}` : b.label;
+    drawButton(ctx, { ...b, label }, b.id === 'resume');
+  }
+  const hint = isTouch() ? 'ボタンのそとをタップしても つづけられるよ' : 'P / Esc で つづける ・ M で おとのオン／オフ';
+  text(ctx, hint, WIDTH / 2, 474, 12, COLOR.muted);
 }
 
 function drawStageClear(ctx: CanvasRenderingContext2D, game: Game): void {
   text(ctx, `ステージ ${game.stageIndex + 1} クリア！`, WIDTH / 2, 408, 28, COLOR.pink, true);
   text(ctx, `「${game.stage.title}」`, WIDTH / 2, 444, 20, COLOR.ink, true);
-  text(ctx, `のこりボール ボーナス +${game.lives * SCORE_LIFE_BONUS}`, WIDTH / 2, 478, 14, COLOR.muted);
+  text(ctx, `のこりボール ボーナス +${game.lives * SCORE_LIFE_BONUS * game.scoreMul}`, WIDTH / 2, 478, 14, COLOR.muted);
   if (game.clearReady && blink(game.phaseTime)) {
     text(ctx, isTouch() ? 'タップで つぎのステージへ' : 'クリック / SPACE で つぎのステージへ', WIDTH / 2, 540, 15, COLOR.ink, true);
   }

@@ -16,11 +16,14 @@
   </head>
   <body>
     <div id="app">
-      <canvas id="game" width="480" height="640" aria-label="さくらちゃんのブロックくずし ゲーム画面"></canvas>
+      <!--
+        タッチ端末用のポーズボタン。ラケットを指で動かす盤面の下ではなく、上に置いて誤操作を防ぐ。
+        消音はポーズ画面の中（「おと：オン／オフ」）にある。
+      -->
       <div id="controls" aria-hidden="true">
-        <button data-action="pause" class="ctl-btn" title="ポーズ">❚❚</button>
-        <button data-action="mute" class="ctl-btn" title="消音">🔊</button>
+        <button data-action="pause" class="ctl-btn" title="ポーズ">❚❚ ポーズ</button>
       </div>
+      <canvas id="game" width="480" height="640" aria-label="さくらちゃんのブロックくずし ゲーム画面"></canvas>
       <p class="hint">
         <a class="to-menu" href="../">← ゲーム一覧</a> ・
         マウス / ← → でラケット ・ <kbd>クリック</kbd> <kbd>Space</kbd> 発射 ・ <kbd>P</kbd> ポーズ ・ <kbd>M</kbd> 消音

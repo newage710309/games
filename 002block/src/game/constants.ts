@@ -56,16 +56,18 @@ export interface Difficulty {
   readonly label: string;
   /** ステージ 1 でのラケットの長さ（px）。 */
   readonly paddleW: number;
+  /** 点数の倍率。ラケットが短い（難しい）ほど高い。ブロックの点にも残りボールのボーナスにも掛かる。 */
+  readonly scoreMul: number;
 }
 
 /**
  * 難易度はラケットの長さだけで決まる。ボールの速さは変えない。
- * ここの数値を変えれば難しさを調整できる。
+ * ここの数値を変えれば難しさと点数の差を調整できる。
  */
 export const DIFFICULTIES: readonly Difficulty[] = [
-  { id: 'easy', label: 'かんたん', paddleW: 120 },
-  { id: 'normal', label: 'ふつう', paddleW: 88 },
-  { id: 'hard', label: 'むずかしい', paddleW: 64 }
+  { id: 'easy', label: 'かんたん', paddleW: 120, scoreMul: 1 },
+  { id: 'normal', label: 'ふつう', paddleW: 88, scoreMul: 2 },
+  { id: 'hard', label: 'むずかしい', paddleW: 64, scoreMul: 3 }
 ];
 
 /** ステージが進むごとにラケットを短くする倍率（ステージ 1, 2, 3）。 */

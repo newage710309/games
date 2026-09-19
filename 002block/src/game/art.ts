@@ -74,6 +74,27 @@ function bodyPath(ctx: CanvasRenderingContext2D): void {
 /** 単位座標の幅（体のいちばん太いところ）。 */
 const UNIT_WIDTH = 28.6;
 
+/** 目の位置（単位座標）。drawEnaga の中の目と同じ値。 */
+const EYE_X = 5.8;
+const EYE_Y = -2.4;
+
+/**
+ * 向かって右の目の中心（イラスト座標）。正面・目線まっすぐのとき。
+ * タイトル画面で「右目だけが見える」ようにブロックを空けるのに使う。
+ */
+export function enagaRightEye(cx: number, cy: number, width: number): { x: number; y: number } {
+  const s = width / UNIT_WIDTH;
+  // enterEnaga で原点を 1.6 だけ上へずらしているぶんも足す
+  return { x: cx + EYE_X * s, y: cy + (EYE_Y - 1.6) * s };
+}
+
+/**
+ * ステージ 1「ゆきのひ」の鳥の位置と大きさ（イラスト座標）。
+ * タイトル画面では右目の入ったブロックを 1 つだけ空けて見せるので、
+ * くちばしがそのブロックにかからない高さにしている（y を小さくするとくちばしの端がのぞく）。
+ */
+export const SNOWDAY_BIRD = { x: 224, y: 151, width: 158 } as const;
+
 /**
  * (cx, cy) を体の中心、width を体の幅として単位座標系に切り替える。
  * 線の太さを求めるための倍率 s を返す。
@@ -269,8 +290,8 @@ export function drawEnaga(
   } else {
     ctx.fillStyle = INK;
     ctx.beginPath();
-    ctx.arc(-5.8 + fx, -2.4, 1.35, 0, Math.PI * 2);
-    ctx.arc(5.8 + fx, -2.4, 1.35, 0, Math.PI * 2);
+    ctx.arc(-EYE_X + fx, EYE_Y, 1.35, 0, Math.PI * 2);
+    ctx.arc(EYE_X + fx, EYE_Y, 1.35, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -443,7 +464,7 @@ export function drawPictureSnowDay(ctx: CanvasRenderingContext2D, t: number): vo
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  drawEnaga(ctx, 224, 146, 158, WHITE_ENAGA, { feet: true });
+  drawEnaga(ctx, SNOWDAY_BIRD.x, SNOWDAY_BIRD.y, SNOWDAY_BIRD.width, WHITE_ENAGA, { feet: true });
   snowfall(ctx, t, 7, 42);
 }
 

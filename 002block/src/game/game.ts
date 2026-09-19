@@ -24,6 +24,7 @@ import {
   clamp
 } from './constants';
 import { STAGES, type Stage, brickColor } from './levels';
+import { SNOWDAY_BIRD, enagaRightEye } from './art';
 import type { Audio } from './audio';
 import { loadHighScore, saveHighScore } from './storage';
 
@@ -76,8 +77,26 @@ const GAMEOVER_BUTTONS: readonly Button[] = [
 
 const ALLCLEAR_BUTTONS: readonly Button[] = [{ id: 'title', label: 'タイトルへ', x: 150, y: 510, w: 180, h: 52 }];
 
-/** タイトル画面で、ブロックに穴をあけてイラストをちょっとだけ見せる範囲（鳥の顔のあたり）。 */
-const TEASER_HOLE = { cx: PICTURE.x + 224, cy: PICTURE.y + 128, rx: 96, ry: 64 };
+/** ポーズ中のボタン。消音はプレイ中に誤って押さないよう、ポーズ画面の中にだけ置く。 */
+const PAUSE_BUTTONS: readonly Button[] = [
+  { id: 'resume', label: 'つづける', x: 130, y: 264, w: 220, h: 52 },
+  { id: 'mute', label: 'おと', x: 130, y: 328, w: 220, h: 52 }, // ラベルは描くときにオン／オフを付ける
+  { id: 'title', label: 'タイトルへ', x: 130, y: 392, w: 220, h: 52 }
+];
+
+/**
+ * タイトル画面では、ブロックを全部埋めたうえで、1 面のシマエナガの
+ * 「向かって右の目」が入っているブロックと、その右隣の 2 個だけを空けてチラ見せする。
+ */
+const TEASER_OPEN: readonly { col: number; row: number }[] = (() => {
+  const e = enagaRightEye(SNOWDAY_BIRD.x, SNOWDAY_BIRD.y, SNOWDAY_BIRD.width);
+  const col = Math.floor(e.x / BRICK_W);
+  const row = Math.floor(e.y / BRICK_H);
+  return [
+    { col, row }, // 右目
+    { col: col + 1, row } // その右隣
+  ];
+})();
 
 const GRAVITY = 700;
 
@@ -119,6 +138,19 @@ export class Game {
     return STAGES.length;
   }
 
+  /** 点数の倍率（難易度で決まる）。 */
+  get scoreMul(): number {
+    return this.difficulty.scoreMul;
+  }
+
+  get muted(): boolean {
+    return this.audio.muted;
+  }
+
+  toggleMute(): void {
+    this.audio.toggleMute();
+  }
+
   /** 面クリア後、「つぎへ」を受け付けられるようになったか。 */
   get clearReady(): boolean {
     return this.phaseTime >= CLEAR_WAIT;
@@ -134,6 +166,7 @@ export class Game {
     if (this.phase === 'title') return DIFFICULTY_BUTTONS;
     if (this.phase === 'gameover') return GAMEOVER_BUTTONS;
     if (this.phase === 'allClear' && this.clearReady) return ALLCLEAR_BUTTONS;
+    if (this.phase === 'paused') return PAUSE_BUTTONS;
     return [];
   }
 
@@ -218,6 +251,10 @@ export class Game {
       this.retryStage();
     } else if (id === 'title') {
       this.goTitle();
+    } else if (id === 'resume') {
+      this.togglePause();
+    } else if (id === 'mute') {
+      this.toggleMute();
     }
   }
 
@@ -250,6 +287,8 @@ export class Game {
   }
 
   private goTitle(): void {
+    // ポーズ画面から途中でやめた場合も、それまでの点数をハイスコアに反映する
+    this.commitHighScore();
     this.setPhase('title');
     this.stageIndex = 0;
     this.particles = [];
@@ -285,12 +324,7 @@ export class Game {
       for (let col = 0; col < BRICK_COLS; col++) {
         const x = PICTURE.x + col * BRICK_W;
         const y = PICTURE.y + row * BRICK_H;
-        let alive = true;
-        if (teaser) {
-          const nx = (x + BRICK_W / 2 - TEASER_HOLE.cx) / TEASER_HOLE.rx;
-          const ny = (y + BRICK_H / 2 - TEASER_HOLE.cy) / TEASER_HOLE.ry;
-          alive = nx * nx + ny * ny > 1;
-        }
+        const alive = !(teaser && TEASER_OPEN.some((o) => o.col === col && o.row === row));
         this.bricks.push({ row, x, y, w: BRICK_W, h: BRICK_H, color: brickColor(stage, row, BRICK_ROWS), alive });
       }
     }
@@ -426,7 +460,7 @@ export class Game {
 
   private breakBrick(brick: Brick): void {
     brick.alive = false;
-    this.score += SCORE_BRICK;
+    this.score += SCORE_BRICK * this.scoreMul;
     // 上の段ほど高い音
     this.audio.play('brick', 1 + (BRICK_ROWS - 1 - brick.row) * 0.04);
     for (let i = 0; i < 10; i++) {
@@ -473,7 +507,7 @@ export class Game {
   }
 
   private stageCleared(): void {
-    this.score += this.lives * SCORE_LIFE_BONUS;
+    this.score += this.lives * SCORE_LIFE_BONUS * this.scoreMul;
     this.commitHighScore();
     this.audio.play('clear');
     this.setPhase(this.stageIndex >= STAGES.length - 1 ? 'allClear' : 'stageClear');

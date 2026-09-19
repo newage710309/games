@@ -43,7 +43,6 @@ window.addEventListener('resize', resizeBackingStore);
 
 const audio = new Audio();
 const game = new Game(audio);
-const muteButton = document.querySelector<HTMLElement>('#controls [data-action="mute"]');
 
 attachInput(canvas, {
   onPoint: (x, y) => game.pointTo(x, y),
@@ -53,10 +52,8 @@ attachInput(canvas, {
     if (action === 'start') game.action();
     else if (action === 'pause') game.togglePause();
     else if (action === 'escape') game.escape();
-    else if (action === 'mute') {
-      const muted = audio.toggleMute();
-      if (muteButton !== null) muteButton.textContent = muted ? '🔇' : '🔊';
-    }
+    // 消音はキーボードの M か、ポーズ画面の「おと」ボタン（タッチ端末）で切り替える
+    else if (action === 'mute') game.toggleMute();
   },
   onAnyInput: () => audio.unlock()
 });

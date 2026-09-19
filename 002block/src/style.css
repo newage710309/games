@@ -81,20 +81,22 @@ kbd {
   font-size: 11px;
 }
 
-/* --- タッチ端末用のポーズ・消音ボタン（タッチ環境のみ表示） --- */
-#controls {
-  display: none;
-  gap: 16px;
-}
+/*
+ * --- タッチ端末用のポーズボタン（タッチ環境のみ表示） ---
+ * ラケットは盤面の下のほうを指でなぞって動かすので、盤面のすぐ下にボタンがあると誤って押しやすい。
+ * そのため盤面の上（縦持ち）または横の上端（横持ち）に置く。消音はポーズ画面の中にある。
+ */
+#controls { display: none; }
 
 .ctl-btn {
-  width: 52px;
-  height: 44px;
-  border-radius: 12px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
   border: 1px solid #2a3c68;
   background: var(--panel);
   color: var(--muted);
-  font-size: 15px;
+  font-family: inherit;
+  font-size: 13px;
   line-height: 1;
   -webkit-user-select: none;
   user-select: none;
@@ -105,31 +107,43 @@ kbd {
 .ctl-btn:active { background: #1b2950; transform: translateY(1px); }
 
 @media (pointer: coarse) {
-  #controls { display: flex; }
+  #app {
+    gap: 8px;
+    padding-top: calc(6px + env(safe-area-inset-top));
+    /* 盤面の幅。上のボタン列（約 44px）と余白を差し引いて最大化し、ボタン列も同じ幅にそろえる。 */
+    --board-w: min(calc(100vw - 16px), calc((100dvh - 80px) * 480 / 640));
+  }
+
+  #controls {
+    display: flex;
+    width: var(--board-w);
+    justify-content: flex-end; /* 盤面の右上にそろえる */
+  }
+
   .hint { display: none; }
 
-  #app { gap: 10px; padding-top: calc(6px + env(safe-area-inset-top)); }
-
-  /* 下のボタン列（約 54px）と余白を差し引いて盤面を最大化する。 */
-  #game {
-    width: min(calc(100vw - 16px), calc((100dvh - 90px) * 480 / 640));
-  }
+  #game { width: var(--board-w); }
 }
 
-/* 横持ち：ボタンを盤面の横に縦並びで置き、高さいっぱいまで使う。 */
+/* 横持ち：ボタンを盤面の右側の上端に置き、盤面は高さいっぱいまで使う。 */
 @media (pointer: coarse) and (orientation: landscape) {
   #app {
     flex-direction: row;
     justify-content: center;
+    align-items: center;
     gap: 16px;
   }
 
   #game {
     width: auto;
     /* 24px = 上下の余白（6px + 12px）と枠線（上下 1px）に、少しゆとりを足したもの */
-    height: min(calc(100dvh - 24px), calc((100vw - 110px) * 640 / 480));
+    height: min(calc(100dvh - 24px), calc((100vw - 140px) * 640 / 480));
     max-width: none;
   }
 
-  #controls { flex-direction: column; }
+  #controls {
+    order: 1; /* HTML では盤面より前にあるが、横持ちでは盤面の右に出す */
+    width: auto;
+    align-self: flex-start;
+  }
 }
