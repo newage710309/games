@@ -39,10 +39,14 @@ html, body {
 
 #game {
   display: block;
-  width: min(520px, calc(100vw - 24px), calc((100dvh - 110px) * 520 / 600));
+  /*
+   * ウィンドウに合わせて拡大・縮小する（上限なし）。縦長の盤面なので、たいていは
+   * 高さで決まる。76px は下の操作説明・余白・枠線のぶん。
+   * 拡大してもぼやけないよう、実ピクセル数は main.ts で表示サイズに合わせている。
+   */
+  width: min(calc(100vw - 24px), calc((100dvh - 76px) * 520 / 600));
   height: auto;
   aspect-ratio: 520 / 600;
-  image-rendering: pixelated;
   border-radius: 10px;
   border: 1px solid #24365f;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
@@ -122,7 +126,7 @@ kbd {
 
   /* D-Pad の高さ（2 段 + 余白）を差し引いて盤面を最大化する。 */
   #game {
-    width: min(520px, calc(100vw - 16px), calc((100dvh - 190px) * 520 / 600));
+    width: min(calc(100vw - 16px), calc((100dvh - 190px) * 520 / 600));
   }
 }
 
