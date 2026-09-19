@@ -67,7 +67,7 @@ export function render(ctx: CanvasRenderingContext2D, game: Game): void {
   drawLanes(ctx, game);
 
   if (game.phase !== 'gameover' && game.phase !== 'title') {
-    drawFrogState(ctx, game);
+    drawPlayerState(ctx, game);
   }
 
   ctx.restore();
@@ -136,7 +136,7 @@ function drawHomes(ctx: CanvasRenderingContext2D, game: Game): void {
     ctx.stroke();
 
     if (game.homes[i] === true) {
-      drawFrog(ctx, x, y, 'up', 1, 0.8);
+      drawBird(ctx, x, y, { scale: 0.8 });
     } else if (game.flyBay === i) {
       drawFly(ctx, x + CELL / 2, y + CELL / 2, game.elapsed);
     }
@@ -283,86 +283,158 @@ function drawVehicle(
   ctx.fillRect(lx, y + h - 7, 3, 4);
 }
 
-// --- かえるちゃん -------------------------------------------------------
+// --- さくらちゃん（プレイヤー） ------------------------------------------
 
-const FACE_ANGLE: Record<Direction, number> = {
-  up: 0,
-  right: Math.PI / 2,
-  down: Math.PI,
-  left: -Math.PI / 2
-};
+const SAKURA = {
+  bodyLight: '#fff4f7',
+  bodyMid: '#f8d9e1',
+  bodyEdge: '#eebccb',
+  outline: 'rgba(130,60,85,0.4)',
+  wing: '#eab0c1',
+  ink: '#1c1418',
+  beak: '#5a4a4f',
+  cheek: 'rgba(240,110,145,0.32)',
+  petal: '#f47fa4',
+  petalEdge: 'rgba(255,255,255,0.85)',
+  flowerCenter: '#d94d78',
+  stamen: '#ffe38a',
+  shadow: 'rgba(0,0,0,0.2)'
+} as const;
 
-export function drawFrog(
+export interface BirdOptions {
+  /** 目線の向き。-1 = 左、0 = 正面、1 = 右。進む方向へ目とくちばしを寄せる。 */
+  gaze?: number;
+  /** 0..1 のホップ進行度。跳んでいる間だけ少し膨らむ。 */
+  hopP?: number;
+  scale?: number;
+  /** 車にぶつかったときの × 目。 */
+  dead?: boolean;
+}
+
+const gazeOf = (facing: Direction): number => (facing === 'left' ? -1 : facing === 'right' ? 1 : 0);
+
+/** 桜の花。5 枚の花びらを中心から放射状に並べる。 */
+function drawSakuraFlower(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number): void {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-0.25);
+  for (let k = 0; k < 5; k++) {
+    const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
+    ctx.save();
+    ctx.rotate(a);
+    ctx.beginPath();
+    ctx.ellipse(r * 0.55, 0, r * 0.55, r * 0.4, 0, 0, Math.PI * 2);
+    ctx.fillStyle = SAKURA.petal;
+    ctx.fill();
+    ctx.strokeStyle = SAKURA.petalEdge;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.fillStyle = SAKURA.flowerCenter;
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = SAKURA.stamen;
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/**
+ * さくらちゃん（桜色のシマエナガ）を描く。(x, y) はセルの左上。
+ * 正面向きのぬいぐるみ風。桜の花飾りは常に向かって右に付けるので、
+ * 左右反転はせず、目とくちばしだけを進む方向へ寄せて向きを表す。
+ */
+export function drawBird(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
-  facing: Direction,
-  hopP: number,
-  scale = 1
+  opts: BirdOptions = {}
 ): void {
-  const cx = x + CELL / 2;
-  const cy = y + CELL / 2;
-  // ホップ中は少しだけ大きくなり、跳ねている感じを出す。
+  const { gaze = 0, hopP = 1, scale = 1, dead = false } = opts;
   const pop = 1 + Math.sin(hopP * Math.PI) * 0.22;
+  const fx = gaze * 1.4; // 顔のパーツの横ずれ量
 
   ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(FACE_ANGLE[facing]);
+  ctx.translate(x + CELL / 2, y + CELL / 2);
   ctx.scale(scale * pop, scale * pop);
 
-  // 後ろ足。
-  ctx.fillStyle = '#2f8f45';
+  // 足元の影。
+  ctx.fillStyle = SAKURA.shadow;
   ctx.beginPath();
-  ctx.ellipse(-12, 9, 6, 4, -0.5, 0, Math.PI * 2);
-  ctx.ellipse(12, 9, 6, 4, 0.5, 0, Math.PI * 2);
+  ctx.ellipse(0, 13.5, 10, 2.2, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // 胴体。
-  ctx.fillStyle = '#4ccf63';
+  // 両脇の小さな翼。体の後ろから少しだけのぞかせる。
+  ctx.fillStyle = SAKURA.wing;
   ctx.beginPath();
-  ctx.ellipse(0, 2, 13, 12, 0, 0, Math.PI * 2);
+  ctx.ellipse(-12, 4.5, 3, 5, 0.35, 0, Math.PI * 2);
+  ctx.ellipse(12, 4.5, 3, 5, -0.35, 0, Math.PI * 2);
   ctx.fill();
 
-  // お腹。
-  ctx.fillStyle = '#bdf5c6';
+  // まんまるの体。左上から光が当たったような、ふわっとしたグラデーション。
+  const grad = ctx.createRadialGradient(-4, -4, 2, 0, 1.5, 14);
+  grad.addColorStop(0, SAKURA.bodyLight);
+  grad.addColorStop(0.55, SAKURA.bodyMid);
+  grad.addColorStop(1, SAKURA.bodyEdge);
+  ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.ellipse(0, 6, 7, 5, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 1.5, 13.5, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = SAKURA.outline;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // ほっぺ。
+  ctx.fillStyle = SAKURA.cheek;
+  ctx.beginPath();
+  ctx.ellipse(-7.5 + fx, 3.2, 2.3, 1.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(7.5 + fx, 3.2, 2.3, 1.4, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // 前足。
-  ctx.fillStyle = '#3fb355';
-  ctx.beginPath();
-  ctx.ellipse(-9, -7, 4.5, 3.5, 0.6, 0, Math.PI * 2);
-  ctx.ellipse(9, -7, 4.5, 3.5, -0.6, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 目玉。
-  for (const ex of [-6, 6]) {
-    ctx.fillStyle = '#eafff0';
+  // 目：小さな点。
+  if (dead) {
+    ctx.strokeStyle = SAKURA.ink;
+    ctx.lineWidth = 1.4;
     ctx.beginPath();
-    ctx.arc(ex, -9, 5.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#0c2513';
+    for (const ex of [-4.5, 4.5]) {
+      ctx.moveTo(ex - 1.8, -1.8);
+      ctx.lineTo(ex + 1.8, 1.8);
+      ctx.moveTo(ex + 1.8, -1.8);
+      ctx.lineTo(ex - 1.8, 1.8);
+    }
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = SAKURA.ink;
     ctx.beginPath();
-    ctx.arc(ex, -10, 2.4, 0, Math.PI * 2);
+    ctx.arc(-4.5 + fx, 0, 1.5, 0, Math.PI * 2);
+    ctx.arc(4.5 + fx, 0, 1.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
     ctx.beginPath();
-    ctx.arc(ex + 1, -11.2, 0.9, 0, Math.PI * 2);
+    ctx.arc(-4 + fx, -0.5, 0.5, 0, Math.PI * 2);
+    ctx.arc(5 + fx, -0.5, 0.5, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // ほっぺ。
-  ctx.fillStyle = 'rgba(255,140,160,0.65)';
+  // ちょこんとした小さいくちばし。
+  ctx.fillStyle = SAKURA.beak;
   ctx.beginPath();
-  ctx.arc(-10, 1, 2.4, 0, Math.PI * 2);
-  ctx.arc(10, 1, 2.4, 0, Math.PI * 2);
+  ctx.moveTo(-1.7 + fx, 2);
+  ctx.lineTo(1.7 + fx, 2);
+  ctx.lineTo(fx, 4.3);
+  ctx.closePath();
   ctx.fill();
+
+  // 向かって右の頭に桜の花飾り。
+  drawSakuraFlower(ctx, 7.5, -7.5, 4.7);
 
   ctx.restore();
 }
 
-function drawFrogState(ctx: CanvasRenderingContext2D, game: Game): void {
+function drawPlayerState(ctx: CanvasRenderingContext2D, game: Game): void {
   const x = game.frogX;
   const y = game.frogY;
 
@@ -370,7 +442,7 @@ function drawFrogState(ctx: CanvasRenderingContext2D, game: Game): void {
     drawDeath(ctx, game, x, y);
     return;
   }
-  drawFrog(ctx, x, y, game.frogFacing, game.hopProgress);
+  drawBird(ctx, x, y, { gaze: gazeOf(game.frogFacing), hopP: game.hopProgress });
 }
 
 function drawDeath(ctx: CanvasRenderingContext2D, game: Game, x: number, y: number): void {
@@ -389,25 +461,13 @@ function drawDeath(ctx: CanvasRenderingContext2D, game: Game, x: number, y: numb
     return;
   }
 
-  ctx.save();
-  ctx.translate(cx, cy);
   // ぺしゃんこになって消える。
-  ctx.scale(1 + p * 0.5, Math.max(0.15, 1 - p));
+  ctx.save();
   ctx.globalAlpha = 1 - p * 0.6;
-  ctx.fillStyle = '#3f9c50';
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 14, 12, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#0c2513';
-  ctx.lineWidth = 2.2;
-  for (const ex of [-6, 6]) {
-    ctx.beginPath();
-    ctx.moveTo(ex - 3, -7);
-    ctx.lineTo(ex + 3, -1);
-    ctx.moveTo(ex + 3, -7);
-    ctx.lineTo(ex - 3, -1);
-    ctx.stroke();
-  }
+  ctx.translate(cx, cy);
+  ctx.scale(1 + p * 0.5, Math.max(0.15, 1 - p));
+  ctx.translate(-cx, -cy);
+  drawBird(ctx, x, y, { dead: true });
   ctx.restore();
 }
 
@@ -435,7 +495,7 @@ function drawHud(ctx: CanvasRenderingContext2D, game: Game): void {
 
   // 残機。
   for (let i = 0; i < Math.max(0, game.lives); i++) {
-    drawFrog(ctx, 4 + i * 22, botY + 4, 'up', 1, 0.6);
+    drawBird(ctx, 4 + i * 22, botY + 4, { scale: 0.6 });
   }
 
   ctx.textAlign = 'left';
@@ -487,18 +547,21 @@ function drawOverlay(ctx: CanvasRenderingContext2D, game: Game): void {
   ctx.textBaseline = 'middle';
 
   if (game.phase === 'title') {
-    const y = panel(ctx, 230);
+    const y = panel(ctx, 244);
+    ctx.fillStyle = '#f8c3d2';
+    ctx.font = `bold 20px ${FONT}`;
+    ctx.fillText('さくらちゃんの', WIDTH / 2, y + 30);
     ctx.fillStyle = COLOR.ink;
-    ctx.font = `bold 38px ${FONT}`;
-    ctx.fillText('かえるちゃん', WIDTH / 2, y + 52);
-    drawFrog(ctx, WIDTH / 2 - CELL / 2, y + 76, 'up', 1, 1.15);
+    ctx.font = `bold 44px ${FONT}`;
+    ctx.fillText('大横断', WIDTH / 2, y + 66);
+    drawBird(ctx, WIDTH / 2 - CELL / 2, y + 92, { scale: 1.15 });
     ctx.font = `14px ${FONT}`;
     ctx.fillStyle = COLOR.muted;
-    ctx.fillText('くるまと かわを こえて', WIDTH / 2, y + 140);
-    ctx.fillText('5つの おうちを めざそう！', WIDTH / 2, y + 162);
+    ctx.fillText('くるまと かわを こえて', WIDTH / 2, y + 158);
+    ctx.fillText('5つの おうちを めざそう！', WIDTH / 2, y + 180);
     ctx.fillStyle = COLOR.ink;
     ctx.font = `bold 15px ${FONT}`;
-    ctx.fillText(blink(game.elapsed) ? startPrompt() : '', WIDTH / 2, y + 196);
+    ctx.fillText(blink(game.elapsed) ? startPrompt() : '', WIDTH / 2, y + 216);
     return;
   }
 

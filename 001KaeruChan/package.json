@@ -1,9 +1,9 @@
 {
-  "name": "kaeru-chan",
+  "name": "sakura-daioudan",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "かえるちゃん - フロッガー風アクションゲーム (TypeScript + Vite + Canvas2D)",
+  "description": "さくらちゃんの大横断 - フロッガー風アクションゲーム (TypeScript + Vite + Canvas2D)",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

@@ -1,7 +1,9 @@
-# かえるちゃん 🐸
+# さくらちゃんの大横断 🌸
 
 フロッガー風のアクションゲーム。車の道路と流れる川を越えて、上の 5 つのお家に
-かえるちゃんを送り届けよう。
+桜色の小鳥「さくらちゃん」を送り届けよう。
+
+（旧名「かえるちゃん」。キャラクターをカエルから桜色のシマエナガに変更した。）
 
 **TypeScript + Vite + Canvas2D** の完全クライアントサイド構成。ビルド成果物は
 静的ファイルだけなので、GitHub Pages / Cloudflare Pages などにそのまま置ける。
@@ -70,16 +72,16 @@ Node.js 18 以上が必要。
 このリポジトリは**ソース管理用**。公開は別リポジトリ（会社サイト）へ手動で配置する。
 
 1. `npm run build`
-2. `dist/` の中身を会社サイトの `files/games/001kaeruchan/` にコピー
+2. `dist/` の中身を会社サイトの `files/games/001daioudan/` にコピー
 3. 会社サイト側でコミットして push
 
-公開先: <https://rapid-apps.co.jp/games/001kaeruchan/>
+公開先: <https://rapid-apps.co.jp/games/001daioudan/>
 
 ファイル名にハッシュが付くため、**更新時は古い `assets/index-*.js` を消してから**
 コピーすること。消さないと使われないファイルが溜まっていく。
 
 `vite.config.ts` で `base: './'` にしてあるので、どの階層に置いてもそのまま動く
-（`https://example.com/games/001kaeruchan/` のようなサブパス配信でも可）。
+（`https://example.com/games/001daioudan/` のようなサブパス配信でも可）。
 
 ## 構成
 
