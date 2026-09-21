@@ -37,7 +37,9 @@ export const ENEMY_SPEEDUP_MAX = 0.45;
 // --- 時間（秒） ----------------------------------------------------------
 
 /** 面の始めに、卵の入った氷を点滅させて場所を教える時間。 */
-export const READY_TIME = 2.2;
+export const READY_TIME = 3;
+/** 面の始めに「STAGE n」の帯を出しておく時間（そのあと消して、盤面と卵の点滅を見せる）。 */
+export const STAGE_BANNER_TIME = 1.3;
 /** ミスのあと、再開するまでの時間。 */
 export const RESPAWN_READY_TIME = 1.4;
 /** 再開直後にぶつかっても平気な時間。 */

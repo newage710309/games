@@ -248,6 +248,8 @@ export class Game {
     invincible: 0,
     walked: 0
   };
+  /** 面の始めに必ず最初にかえる卵（迷路の F）。序盤をやさしくするために置く。 */
+  private firstEggs: { col: number; row: number }[] = [];
   private startCol = 0;
   private startRow = 0;
   private moveDir: Dir = 'down';
@@ -456,11 +458,13 @@ export class Game {
     this.shards = [];
     this.breaking = [];
     this.spawnTimer = 0;
+    this.firstEggs = [];
     for (const d of DIRS) this.wallShake[d] = 0;
     stage.maze.forEach((line, row) => {
       [...line].forEach((ch, col) => {
-        if (ch === '#' || ch === 'E') this.ice[idx(col, row)] = 1;
-        if (ch === 'E') this.egg[idx(col, row)] = 1;
+        if (ch === '#' || ch === 'E' || ch === 'F') this.ice[idx(col, row)] = 1;
+        if (ch === 'E' || ch === 'F') this.egg[idx(col, row)] = 1;
+        if (ch === 'F') this.firstEggs.push({ col, row });
         if (ch === 'P') {
           this.startCol = col;
           this.startRow = row;
@@ -800,7 +804,14 @@ export class Game {
   // --- 雪だるま ----------------------------------------------------------
 
   private hatchInitial(): void {
-    const n = Math.min(this.stage.maxActive, this.eggsLeft);
+    let n = Math.min(this.stage.maxActive, this.eggsLeft);
+    // F の卵があれば、まずそれをかえす（足りない分はいつもどおり遠くの卵から）
+    for (const f of this.firstEggs) {
+      if (n === 0) break;
+      if (!this.hasEgg(f.col, f.row)) continue;
+      this.hatchAt(f.col, f.row);
+      n--;
+    }
     for (let k = 0; k < n; k++) this.hatchOne();
   }
 
@@ -828,7 +839,13 @@ export class Game {
     if (eggs.length === 0) return; // 卵は全部すべっている途中
     eggs.sort((a, b) => b.d - a.d);
     const pick = eggs[Math.floor(this.rng() * Math.ceil(eggs.length / 2))]!;
-    const i = idx(pick.col, pick.row);
+    this.hatchAt(pick.col, pick.row);
+  }
+
+  /** (col, row) の卵をかえす。 */
+  private hatchAt(col: number, row: number): void {
+    const pick = { col, row };
+    const i = idx(col, row);
     this.ice[i] = 0;
     this.egg[i] = 0;
     this.enemies.push({

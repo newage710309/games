@@ -14,6 +14,7 @@ import {
   ENEMY_BREAK_TIME,
   BREAK_ANIM_TIME,
   PUSH_HOLD,
+  STAGE_BANNER_TIME,
   ROWS,
   WALL,
   WALL_SHAKE_TIME,
@@ -426,10 +427,16 @@ function band(ctx: CanvasRenderingContext2D, y: number, h: number): void {
 
 function drawReady(ctx: CanvasRenderingContext2D, game: Game): void {
   if (game.readyIsStageStart) {
+    // 帯は最初だけ出して消す（盤面の真ん中に重なるので、そのあとは配置と卵の点滅を見せる）
+    const fade = Math.min(1, Math.max(0, (game.phaseTime - STAGE_BANNER_TIME) / 0.4));
+    if (fade >= 1) return;
+    ctx.save();
+    ctx.globalAlpha = 1 - fade;
     band(ctx, 250, 118);
     text(ctx, `STAGE ${game.stageIndex + 1}`, WIDTH / 2, 280, 30, COLOR.pink, true);
     text(ctx, `「${game.stage.title}」`, WIDTH / 2, 314, 18, COLOR.ink, true);
     text(ctx, 'ピンクに光る氷には 雪だるまのたまごが入っているよ', WIDTH / 2, 346, 12, COLOR.muted);
+    ctx.restore();
   } else {
     band(ctx, 286, 52);
     text(ctx, 'READY', WIDTH / 2, 312, 26, COLOR.pink, true);
