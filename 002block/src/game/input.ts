@@ -1,4 +1,4 @@
-import { HEIGHT, WIDTH } from './constants';
+import { HEIGHT, PADDLE_Y, WIDTH } from './constants';
 
 export type Action = 'start' | 'pause' | 'mute' | 'escape';
 
@@ -10,6 +10,8 @@ export interface InputHandlers {
   /** ← → の状態。dir は -1 / 0 / 1、pressed は押した瞬間なら true。 */
   onKeyDir(dir: number, pressed: boolean): void;
   onAction(action: Action): void;
+  /** 盤面の外（バーより下）をタップした（タッチ端末のみ）。発射に使う。 */
+  onBelowTap(): void;
   /** 何らかのユーザー操作があったとき（音声の解錠用）。 */
   onAnyInput(): void;
 }
@@ -81,6 +83,51 @@ export function attachInput(canvas: HTMLCanvasElement, handlers: InputHandlers):
     isDown = false;
   };
 
+  // --- 盤面の外での操作（タッチ端末のみ） ---------------------------------
+  // 盤面の下の余白など、画面のうちバーより下ならどこを触ってもラケットを動かせる。
+  // 指でボールやバーを隠さずに操作できるように。横の位置は盤面と同じ座標で合わせる。
+  let outsideId: number | null = null;
+  let outsideX = 0;
+  let outsideY = 0;
+  let outsideAt = 0;
+
+  const onDocPointerDown = (e: PointerEvent): void => {
+    if (e.pointerType === 'mouse') return;
+    const target = e.target instanceof Element ? e.target : null;
+    // 盤面そのもの・ボタン・リンクは、それぞれの処理にまかせる
+    if (target === null || target === canvas || target.closest('#controls, a, button') !== null) return;
+    const p = toLogical(e);
+    if (p.y < PADDLE_Y) return; // バーより上は何もしない
+    e.preventDefault();
+    handlers.onAnyInput();
+    outsideId = e.pointerId;
+    outsideX = e.clientX;
+    outsideY = e.clientY;
+    outsideAt = performance.now();
+    try {
+      target.setPointerCapture(e.pointerId);
+    } catch {
+      /* 対応していない環境では無視 */
+    }
+    handlers.onPoint(p.x, PADDLE_Y);
+  };
+
+  const onDocPointerMove = (e: PointerEvent): void => {
+    if (e.pointerId !== outsideId) return;
+    handlers.onPoint(toLogical(e).x, PADDLE_Y);
+  };
+
+  const onDocPointerUp = (e: PointerEvent): void => {
+    if (e.pointerId !== outsideId) return;
+    outsideId = null;
+    const moved = Math.hypot(e.clientX - outsideX, e.clientY - outsideY);
+    if (moved <= TAP_SLOP && performance.now() - outsideAt <= TAP_TIME) handlers.onBelowTap();
+  };
+
+  const onDocPointerCancel = (e: PointerEvent): void => {
+    if (e.pointerId === outsideId) outsideId = null;
+  };
+
   const DIR_KEYS: Record<string, number> = {
     ArrowLeft: -1,
     ArrowRight: 1,
@@ -139,6 +186,10 @@ export function attachInput(canvas: HTMLCanvasElement, handlers: InputHandlers):
   canvas.addEventListener('pointerup', onPointerUp);
   canvas.addEventListener('pointercancel', onPointerCancel);
   canvas.addEventListener('contextmenu', onContextMenu);
+  document.addEventListener('pointerdown', onDocPointerDown);
+  document.addEventListener('pointermove', onDocPointerMove);
+  document.addEventListener('pointerup', onDocPointerUp);
+  document.addEventListener('pointercancel', onDocPointerCancel);
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', onBlur);
@@ -163,6 +214,10 @@ export function attachInput(canvas: HTMLCanvasElement, handlers: InputHandlers):
     canvas.removeEventListener('pointerup', onPointerUp);
     canvas.removeEventListener('pointercancel', onPointerCancel);
     canvas.removeEventListener('contextmenu', onContextMenu);
+    document.removeEventListener('pointerdown', onDocPointerDown);
+    document.removeEventListener('pointermove', onDocPointerMove);
+    document.removeEventListener('pointerup', onDocPointerUp);
+    document.removeEventListener('pointercancel', onDocPointerCancel);
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('keyup', onKeyUp);
     window.removeEventListener('blur', onBlur);

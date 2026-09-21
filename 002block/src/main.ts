@@ -55,6 +55,10 @@ attachInput(canvas, {
     // 消音はキーボードの M か、ポーズ画面の「おと」ボタン（タッチ端末）で切り替える
     else if (action === 'mute') game.toggleMute();
   },
+  // 盤面の下の余白をタップしたら発射（タイトルなどで誤って決定しないよう、発射待ちのときだけ）
+  onBelowTap: () => {
+    if (game.phase === 'serve') game.action();
+  },
   onAnyInput: () => audio.unlock()
 });
 

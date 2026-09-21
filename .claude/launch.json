@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "003yukidaruma", "run", "dev", "--", "--port", "5175", "--strictPort"],
       "port": 5175
+    },
+    {
+      "name": "shimaenaga-block",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "002block", "run", "dev", "--", "--port", "5174", "--strictPort"],
+      "port": 5174
     }
   ]
 }

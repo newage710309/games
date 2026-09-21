@@ -107,6 +107,9 @@ kbd {
 .ctl-btn:active { background: #1b2950; transform: translateY(1px); }
 
 @media (pointer: coarse) {
+  /* 盤面の外（バーより下）でもラケットを動かすので、ページのスクロールやズームに取られないようにする。 */
+  html, body { touch-action: none; }
+
   #app {
     gap: 8px;
     padding-top: calc(6px + env(safe-area-inset-top));
