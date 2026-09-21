@@ -1,0 +1,20 @@
+{
+  "name": "sakura-yukidaruma",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "さくらちゃんの雪だるま退治 - 氷のブロックを押して雪だるまをやっつける、ペンゴ風のパズルアクション (TypeScript + Vite + Canvas2D)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
+}
