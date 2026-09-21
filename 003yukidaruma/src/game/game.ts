@@ -66,8 +66,13 @@ export interface Player extends Mover {
   facing: Dir;
   /** 氷を押してからの時間（押すしぐさの演出用）。 */
   pushTime: number;
-  /** 氷に向かって押し続けている時間（PUSH_HOLD に達すると押せる）。 */
+  /** 氷に向かって押し続けている時間（ためが要るときは PUSH_HOLD に達すると押せる）。 */
   pushCharge: number;
+  /**
+   * 歩いてきて止まったときの向き。この向きのまま氷に当たったときだけ、押すのにためが要る。
+   * 止まっている状態から押したとき（いったん離した・向きを変えた）は、すぐに押せる。
+   */
+  arrivedDir: Dir | null;
   /** 次の操作を受け付けるまでの時間。 */
   cooldown: number;
   /** 0 より大きい間はぶつかっても平気（点滅する）。 */
@@ -238,6 +243,7 @@ export class Game {
     facing: 'down',
     pushTime: 99,
     pushCharge: 0,
+    arrivedDir: null,
     cooldown: 0,
     invincible: 0,
     walked: 0
@@ -474,6 +480,7 @@ export class Game {
     p.cooldown = 0;
     p.pushTime = 99;
     p.pushCharge = 0;
+    p.arrivedDir = null;
   }
 
   private setPhase(p: Phase): void {
@@ -571,16 +578,20 @@ export class Game {
       p.row = p.toRow;
       p.t = 0;
       p.moving = false;
+      p.arrivedDir = this.moveDir;
       // 押しっぱなしなら、止まらずに次のマスへ（余った時間のぶん進める）
       if (want !== null && this.tryStart(want)) p.t = Math.min(0.99, leftover * PLAYER_SPEED);
       return;
     }
 
+    // 止まって手を離した・止まったまま向きを変えたら、次はすぐに押せる
+    if (want !== p.arrivedDir) p.arrivedDir = null;
     if (want === null || p.cooldown > 0) {
       p.pushCharge = 0;
       return;
     }
-    // 氷に向かっているときは、少し押し続けてから押す（すぐにすべって・割れてしまわないように）
+    // 歩いてきてそのまま氷に当たったときだけ、少し押し続けてから押す
+    // （歩いた勢いで、すぐにすべって・割れてしまわないように）。止まっている状態から押したときはすぐ押す。
     const { dx, dy } = DELTA[want];
     const nc = p.col + dx;
     const nr = p.row + dy;
@@ -588,8 +599,9 @@ export class Game {
       if (p.facing !== want) p.pushCharge = 0;
       p.facing = want;
       p.pushCharge += dt;
-      if (p.pushCharge < PUSH_HOLD) return;
+      if (p.arrivedDir === want && p.pushCharge < PUSH_HOLD) return;
       p.pushCharge = 0;
+      p.arrivedDir = null;
       this.pushIce(nc, nr, want);
       p.cooldown = PUSH_COOLDOWN;
       p.pushTime = 0;
