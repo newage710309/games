@@ -52,6 +52,10 @@ export const STUN_TIME = 4;
 export const WALL_SHAKE_COOLDOWN = 0.4;
 /** 壁のゆれの見た目の長さ。 */
 export const WALL_SHAKE_TIME = 0.35;
+/** 氷に向かってこの時間押し続けると、すべる（割れる）。すぐに動かないよう少しだけためる。 */
+export const PUSH_HOLD = 0.22;
+/** 氷が割れるアニメーションの長さ。 */
+export const BREAK_ANIM_TIME = 0.45;
 /** 氷を押した直後、次の操作を受け付けるまでの時間。 */
 export const PUSH_COOLDOWN = 0.18;
 /** 雪だるまが氷を壊すのにかかる時間。 */

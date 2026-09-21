@@ -12,6 +12,8 @@ import {
   HEIGHT,
   HUD_H,
   ENEMY_BREAK_TIME,
+  BREAK_ANIM_TIME,
+  PUSH_HOLD,
   ROWS,
   WALL,
   WALL_SHAKE_TIME,
@@ -102,15 +104,28 @@ function drawBoard(ctx: CanvasRenderingContext2D, game: Game): void {
     if (e.state === 'break') cracks.set(e.breakRow * COLS + e.breakCol, Math.min(1, e.timer / ENEMY_BREAK_TIME));
   }
 
+  // さくらちゃんが押し続けている氷は、押している向きに小さくふるわせる
+  const p = game.player;
+  const pushK = p.pushCharge > 0 ? p.pushCharge / PUSH_HOLD : 0;
+  const pd = DELTA[p.facing];
+  const pushedCol = p.col + pd.dx;
+  const pushedRow = p.row + pd.dy;
+  const jiggle = pushK > 0 ? (1 + Math.sin(game.elapsed * 70)) * 1.2 * pushK : 0;
+
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
       if (!game.hasIce(col, row)) continue;
-      drawIce(ctx, BOARD_X + col * CELL, BOARD_Y + row * CELL, CELL, {
+      const pushed = pushK > 0 && col === pushedCol && row === pushedRow;
+      const ox = pushed ? pd.dx * jiggle : 0;
+      const oy = pushed ? pd.dy * jiggle : 0;
+      drawIce(ctx, BOARD_X + col * CELL + ox, BOARD_Y + row * CELL + oy, CELL, {
         showEgg: showEggs && game.hasEgg(col, row),
         crack: cracks.get(row * COLS + col) ?? 0
       });
     }
   }
+
+  for (const b of game.breaking) drawBreakingIce(ctx, b.col, b.row, b.age / BREAK_ANIM_TIME, b.egg);
 
   // すべっている氷と、巻きこまれた雪だるま
   for (const s of game.slides) {
@@ -155,6 +170,47 @@ function drawBoard(ctx: CanvasRenderingContext2D, game: Game): void {
     outlinedText(ctx, p.text, p.x, p.y - 14 - p.age * 30, 18, '#ffffff', COLOR.popup);
   }
   ctx.globalAlpha = 1;
+}
+
+/**
+ * 氷が割れるアニメーション（k = 0..1）。最初にひびが一気に広がって少しふくらみ、
+ * そのあと 4 つのかけらに割れて、回りながら外へ飛び散って消える。
+ */
+function drawBreakingIce(ctx: CanvasRenderingContext2D, col: number, row: number, k: number, egg: boolean): void {
+  const x0 = BOARD_X + col * CELL;
+  const y0 = BOARD_Y + row * CELL;
+  const mx = x0 + CELL / 2;
+  const my = y0 + CELL / 2;
+  const CRACK = 0.25; // ひびが入るまでの割合
+
+  if (k < CRACK) {
+    const c = k / CRACK;
+    const s = 1 + Math.sin(c * Math.PI) * 0.06;
+    ctx.save();
+    ctx.translate(mx, my);
+    ctx.scale(s, s);
+    drawIce(ctx, -CELL / 2, -CELL / 2, CELL, { crack: 0.4 + c * 0.6, showEgg: egg });
+    ctx.restore();
+    return;
+  }
+
+  const f = (k - CRACK) / (1 - CRACK);
+  const half = CELL / 2;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, 1 - f * f);
+  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
+    ctx.save();
+    // かけらは外へ飛びながら、少し落ちる
+    ctx.translate(mx + sx * f * 20, my + sy * f * 14 + f * f * 16);
+    ctx.rotate(sx * f * 0.9);
+    ctx.scale(1 - f * 0.35, 1 - f * 0.35);
+    ctx.beginPath();
+    ctx.rect(sx < 0 ? -half : 0, sy < 0 ? -half : 0, half, half);
+    ctx.clip();
+    drawIce(ctx, -half, -half, CELL, { crack: 1, showEgg: egg });
+    ctx.restore();
+  }
+  ctx.restore();
 }
 
 const enemyY = (e: Enemy): number => (e.state === 'squashed' || e.state === 'kicked' ? e.py : cy(posRow(e)));
@@ -226,10 +282,13 @@ function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
   if (p.invincible > 0 && blink(p.invincible, 5)) return;
 
   if (p.moving) y -= Math.abs(Math.sin(p.walked * Math.PI)) * 3;
-  const push = p.pushTime < 0.2 ? Math.sin((p.pushTime / 0.2) * Math.PI) * 0.16 : 0;
+  // 押し続けている間は、ぐっと力をためるように体を寄せてつぶれていく
+  const charge = p.pushCharge > 0 ? p.pushCharge / PUSH_HOLD : 0;
+  const push = p.pushTime < 0.2 ? Math.sin((p.pushTime / 0.2) * Math.PI) * 0.16 : charge * 0.12;
   // 押している向きに少し体を寄せる
   const { dx, dy } = DELTA[p.facing];
-  drawSakura(ctx, x + dx * push * 20, y + dy * push * 14, {
+  const shake = charge > 0 ? Math.sin(game.elapsed * 60) * 0.6 * charge : 0;
+  drawSakura(ctx, x + dx * push * 20 + shake * dy, y + dy * push * 14 + shake * dx, {
     scale: SAKURA_SCALE,
     // 下向きは正面、上向きは後ろ姿、左右は真横
     view: p.facing === 'up' ? 'back' : p.facing === 'down' ? 'front' : p.facing,

@@ -16,6 +16,8 @@ import {
   OPPOSITE,
   PLAYER_SPEED,
   PUSH_COOLDOWN,
+  PUSH_HOLD,
+  BREAK_ANIM_TIME,
   READY_TIME,
   RESPAWN_DELAY,
   RESPAWN_READY_TIME,
@@ -64,6 +66,8 @@ export interface Player extends Mover {
   facing: Dir;
   /** 氷を押してからの時間（押すしぐさの演出用）。 */
   pushTime: number;
+  /** 氷に向かって押し続けている時間（PUSH_HOLD に達すると押せる）。 */
+  pushCharge: number;
   /** 次の操作を受け付けるまでの時間。 */
   cooldown: number;
   /** 0 より大きい間はぶつかっても平気（点滅する）。 */
@@ -114,6 +118,14 @@ export interface Popup {
   readonly x: number;
   readonly y: number;
   readonly text: string;
+  age: number;
+}
+
+/** 割れている途中の氷（見た目だけ。マスはもう空いている）。 */
+export interface BreakingIce {
+  readonly col: number;
+  readonly row: number;
+  readonly egg: boolean;
   age: number;
 }
 
@@ -212,6 +224,7 @@ export class Game {
   enemies: Enemy[] = [];
   popups: Popup[] = [];
   shards: Shard[] = [];
+  breaking: BreakingIce[] = [];
   /** 壁ごとのゆれの残り時間。 */
   readonly wallShake: Record<Dir, number> = { up: 0, down: 0, left: 0, right: 0 };
 
@@ -224,6 +237,7 @@ export class Game {
     moving: false,
     facing: 'down',
     pushTime: 99,
+    pushCharge: 0,
     cooldown: 0,
     invincible: 0,
     walked: 0
@@ -434,6 +448,7 @@ export class Game {
     this.enemies = [];
     this.popups = [];
     this.shards = [];
+    this.breaking = [];
     this.spawnTimer = 0;
     for (const d of DIRS) this.wallShake[d] = 0;
     stage.maze.forEach((line, row) => {
@@ -458,6 +473,7 @@ export class Game {
     p.moving = false;
     p.cooldown = 0;
     p.pushTime = 99;
+    p.pushCharge = 0;
   }
 
   private setPhase(p: Phase): void {
@@ -560,10 +576,30 @@ export class Game {
       return;
     }
 
-    if (want !== null && p.cooldown <= 0) this.tryStart(want);
+    if (want === null || p.cooldown > 0) {
+      p.pushCharge = 0;
+      return;
+    }
+    // 氷に向かっているときは、少し押し続けてから押す（すぐにすべって・割れてしまわないように）
+    const { dx, dy } = DELTA[want];
+    const nc = p.col + dx;
+    const nr = p.row + dy;
+    if (this.hasIce(nc, nr)) {
+      if (p.facing !== want) p.pushCharge = 0;
+      p.facing = want;
+      p.pushCharge += dt;
+      if (p.pushCharge < PUSH_HOLD) return;
+      p.pushCharge = 0;
+      this.pushIce(nc, nr, want);
+      p.cooldown = PUSH_COOLDOWN;
+      p.pushTime = 0;
+      return;
+    }
+    p.pushCharge = 0;
+    this.tryStart(want);
   }
 
-  /** dir の方向へ動く。氷なら押す、壁ならゆらす。歩き出したら true。 */
+  /** dir の方向へ動く。壁ならゆらす（氷は updatePlayer で押し続けたときに押す）。歩き出したら true。 */
   private tryStart(dir: Dir): boolean {
     const p = this.player;
     p.facing = dir;
@@ -577,12 +613,7 @@ export class Game {
       p.pushTime = 0;
       return false;
     }
-    if (this.hasIce(nc, nr)) {
-      this.pushIce(nc, nr, dir);
-      p.cooldown = PUSH_COOLDOWN;
-      p.pushTime = 0;
-      return false;
-    }
+    if (this.hasIce(nc, nr)) return false;
     if (this.slideAt(nc, nr) !== null) return false;
     // 卵から出てくる途中の雪だるまには重ならない（出てきた瞬間にぶつかるのは理不尽なので）
     if (this.enemies.some((e) => e.state === 'hatch' && e.col === nc && e.row === nr)) return false;
@@ -622,6 +653,7 @@ export class Game {
     this.ice[i] = 0;
     const x = cellCenterX(col);
     const y = cellCenterY(row);
+    this.breaking.push({ col, row, egg: this.egg[i] === 1, age: 0 });
     if (this.egg[i] === 1) {
       this.egg[i] = 0;
       this.addScore(SCORE_EGG, x, y);
@@ -849,6 +881,7 @@ export class Game {
           e.timer += dt;
           if (e.timer >= ENEMY_BREAK_TIME) {
             this.ice[idx(e.breakCol, e.breakRow)] = 0;
+            this.breaking.push({ col: e.breakCol, row: e.breakRow, egg: false, age: 0 });
             this.burst(cellCenterX(e.breakCol), cellCenterY(e.breakRow), 10);
             this.audio.play('break', 0.7);
             e.state = 'walk';
@@ -1071,6 +1104,8 @@ export class Game {
   }
 
   private updateEffects(dt: number): void {
+    for (const b of this.breaking) b.age += dt;
+    this.breaking = this.breaking.filter((b) => b.age < BREAK_ANIM_TIME);
     for (const s of this.shards) {
       s.age += dt;
       s.x += s.vx * dt;
