@@ -144,7 +144,7 @@ function drawResult(ctx: CanvasRenderingContext2D, game: Game): void {
   g.addColorStop(1, '#0b1428');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  const names = ['もうすこし…', 'おなか いっぱい', 'みんなで おやつ'];
+  const names = ['もうすこし…', 'おなか いっぱい', 'たべすぎ！'];
   panel(ctx, 50, 110, 380, 400);
   text(ctx, 'けっか', WIDTH / 2, 146, 16, COLOR.muted, true);
   text(ctx, names[game.endingTier]!, WIDTH / 2, 186, 28, COLOR.pink, true);
@@ -160,7 +160,7 @@ function drawResult(ctx: CanvasRenderingContext2D, game: Game): void {
     outlinedText(ctx, 'ぜんぶ クリア！', WIDTH / 2, 436, 26, '#ffd84a', '#5a3a1e');
   } else {
     const need = ENDING_SCORES[1] - game.score;
-    text(ctx, `みんなで おやつ まで あと ${need.toLocaleString('en-US')} てん`, WIDTH / 2, 436, 14, COLOR.muted, true);
+    text(ctx, `クリア まで あと ${need.toLocaleString('en-US')} てん`, WIDTH / 2, 436, 14, COLOR.muted, true);
   }
   if (game.newHiScore) text(ctx, 'ハイスコア こうしん！', WIDTH / 2, 470, 15, '#ffd84a', true);
   text(ctx, `HI ${game.hiScore.toLocaleString('en-US')}`, WIDTH / 2, 492, 12, COLOR.muted, true);

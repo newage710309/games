@@ -21,7 +21,22 @@ const SAKURA = {
   flowerCenter: '#d94d78',
   stamen: '#ffe38a',
   shadow: 'rgba(40,70,110,0.2)'
-} as const;
+};
+
+type Palette = typeof SAKURA;
+
+/** ゆきまるくん（白いシマエナガの男の子）。形はさくらちゃんと同じで、色だけ変える。花飾りはなし。 */
+const YUKIMARU: Palette = {
+  ...SAKURA,
+  bodyLight: '#ffffff',
+  body: '#eef3f8',
+  line: '#4a4f5e',
+  cheek: 'rgba(150,180,220,0.45)'
+};
+
+/** 今描いている鳥の色（drawSakura の呼び出しごとに切りかえる）。 */
+let C: Palette = SAKURA;
+let showFlower = true;
 
 /** 見た目の向き。front = 正面（下向き）、back = 後ろ姿（上向き）、left / right = 真横。 */
 export type SakuraView = 'front' | 'back' | 'left' | 'right';
@@ -46,6 +61,10 @@ export interface SakuraOptions {
   blush?: number;
   /** くちばしを開く（正面のみ、ついばむ瞬間）。 */
   beakOpen?: boolean;
+  /** どの鳥を描くか。yukimaru は白い体で花飾りなし（幕間デモ用）。 */
+  bird?: 'sakura' | 'yukimaru';
+  /** 羽ばたき 0..1（真横のみ）。1 で翼を上に大きく広げる。 */
+  flap?: number;
   /** 影を描くか。 */
   shadow?: boolean;
   /** 回転（ラジアン）。 */
@@ -119,10 +138,14 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
     eyes = 'dot',
     puff = 0,
     blush = 0,
-    beakOpen = false
+    beakOpen = false,
+    bird = 'sakura',
+    flap = 0
   } = opts;
   const fx = gaze * 1.6;
   const fy = up ? -1.6 : 0;
+  C = bird === 'yukimaru' ? YUKIMARU : SAKURA;
+  showFlower = bird === 'sakura';
 
   ctx.save();
   ctx.translate(cx, cy);
@@ -131,7 +154,7 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
   ctx.lineJoin = 'round';
 
   if (shadow) {
-    ctx.fillStyle = SAKURA.shadow;
+    ctx.fillStyle = C.shadow;
     ctx.beginPath();
     ctx.ellipse(0, 15.4, 12 * (1 + squash * 0.6), 2.4, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -149,7 +172,7 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
     return;
   }
   if (view === 'left' || view === 'right') {
-    drawSakuraSide(ctx, view === 'right' ? 1 : -1);
+    drawSakuraSide(ctx, view === 'right' ? 1 : -1, flap);
     ctx.restore();
     return;
   }
@@ -174,12 +197,12 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
     ctx.quadraticCurveTo(13.4, 7.2, 12.0, 11.4);
     ctx.quadraticCurveTo(9.9, 9.6, 9.6, 4.4);
     ctx.closePath();
-    ctx.fillStyle = SAKURA.wing;
+    ctx.fillStyle = C.wing;
     ctx.fill();
-    ctx.strokeStyle = SAKURA.line;
+    ctx.strokeStyle = C.line;
     ctx.lineWidth = 0.9;
     ctx.stroke();
-    ctx.strokeStyle = SAKURA.wingFeather;
+    ctx.strokeStyle = C.wingFeather;
     ctx.lineWidth = 0.6;
     ctx.beginPath();
     ctx.moveTo(10.7, 7.4);
@@ -207,7 +230,7 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
   const cheekY = puff > 0 ? pc.y + 0.6 : 2.4;
   const cheekW = 2.4 + puff * 2.2 + blush;
   const cheekH = 1.5 + puff * 1 + blush * 0.6;
-  ctx.fillStyle = SAKURA.cheek;
+  ctx.fillStyle = C.cheek;
   ctx.beginPath();
   ctx.ellipse(-cheekX + fx, cheekY + fy, cheekW, cheekH, 0, 0, Math.PI * 2);
   ctx.ellipse(cheekX + fx, cheekY + fy, cheekW, cheekH, 0, 0, Math.PI * 2);
@@ -228,7 +251,7 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
   }
 
   if (dead) {
-    ctx.strokeStyle = SAKURA.ink;
+    ctx.strokeStyle = C.ink;
     ctx.lineWidth = 1.3;
     ctx.beginPath();
     for (const ex of [-5.8, 5.8]) {
@@ -240,7 +263,7 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
     ctx.stroke();
   } else if (eyes === 'happy') {
     // にっこり閉じた目（^ ^）
-    ctx.strokeStyle = SAKURA.ink;
+    ctx.strokeStyle = C.ink;
     ctx.lineWidth = 1.1;
     ctx.beginPath();
     for (const ex of [-5.8, 5.8]) {
@@ -252,19 +275,19 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
     // 見開いた目（白目つき）
     for (const ex of [-5.8, 5.8]) {
       ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = SAKURA.ink;
+      ctx.strokeStyle = C.ink;
       ctx.lineWidth = 0.7;
       ctx.beginPath();
       ctx.arc(ex + fx, -2.8 + fy, 2.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = SAKURA.ink;
+      ctx.fillStyle = C.ink;
       ctx.beginPath();
       ctx.arc(ex + fx, -2.8 + fy, 1.1, 0, Math.PI * 2);
       ctx.fill();
     }
   } else {
-    ctx.fillStyle = SAKURA.ink;
+    ctx.fillStyle = C.ink;
     ctx.beginPath();
     ctx.arc(-5.8 + fx, -2.4 + fy, 1.35, 0, Math.PI * 2);
     ctx.arc(5.8 + fx, -2.4 + fy, 1.35, 0, Math.PI * 2);
@@ -273,14 +296,14 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
 
   // くちばし（ほおばっているときは口いっぱいで小さく見える）
   const bw = 1.3 * (1 - puff * 0.35);
-  ctx.fillStyle = SAKURA.beak;
+  ctx.fillStyle = C.beak;
   if (beakOpen) {
     // 開いたくちばし：上下に分けて、あいだに口の中を見せる
     ctx.fillStyle = '#b8485e';
     ctx.beginPath();
     ctx.ellipse(fx, 0.9 + fy, 1.1, 1.1, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = SAKURA.beak;
+    ctx.fillStyle = C.beak;
     ctx.beginPath();
     ctx.moveTo(-1.5 + fx, -0.6 + fy);
     ctx.lineTo(1.5 + fx, -0.6 + fy);
@@ -300,7 +323,7 @@ export function drawSakura(ctx: CanvasRenderingContext2D, cx: number, cy: number
     ctx.fill();
   }
 
-  drawSakuraFlower(ctx, 6.4, -9.6, 4.6);
+  if (showFlower) drawSakuraFlower(ctx, 6.4, -9.6, 4.6);
 
   ctx.restore();
 }
@@ -319,13 +342,13 @@ function drawTail(ctx: CanvasRenderingContext2D, x: number, y: number, tilt: num
   ctx.quadraticCurveTo(0, -19.2, 1.2, -17.5);
   ctx.quadraticCurveTo(3.2, -9, 2.4, 0);
   ctx.closePath();
-  ctx.fillStyle = SAKURA.wing;
+  ctx.fillStyle = C.wing;
   ctx.fill();
-  ctx.strokeStyle = SAKURA.line;
+  ctx.strokeStyle = C.line;
   ctx.lineWidth = 0.9;
   ctx.stroke();
   // 羽の縁取り
-  ctx.strokeStyle = SAKURA.wingFeather;
+  ctx.strokeStyle = C.wingFeather;
   ctx.lineWidth = 0.6;
   ctx.beginPath();
   ctx.moveTo(0, -3);
@@ -337,12 +360,12 @@ function drawTail(ctx: CanvasRenderingContext2D, x: number, y: number, tilt: num
 /** 体を塗って、手描き風の輪郭（本線＋少しずらした途切れ線）を引く。 */
 function fillBody(ctx: CanvasRenderingContext2D, path: (ctx: CanvasRenderingContext2D) => void, lightX: number): void {
   const grad = ctx.createRadialGradient(lightX, -6, 1, 0, 2, 16);
-  grad.addColorStop(0, SAKURA.bodyLight);
-  grad.addColorStop(1, SAKURA.body);
+  grad.addColorStop(0, C.bodyLight);
+  grad.addColorStop(1, C.body);
   ctx.fillStyle = grad;
   path(ctx);
   ctx.fill();
-  ctx.strokeStyle = SAKURA.line;
+  ctx.strokeStyle = C.line;
   ctx.lineWidth = 1.2;
   path(ctx);
   ctx.stroke();
@@ -372,14 +395,14 @@ function drawPuffCheeks(ctx: CanvasRenderingContext2D, puff: number, fx: number,
     ctx.translate(fx, fy);
     ctx.scale(side, 1);
     const grad = ctx.createRadialGradient(c.x - 1, c.y - c.ry * 0.5, 0.5, c.x, c.y, c.rx * 1.1);
-    grad.addColorStop(0, SAKURA.bodyLight);
-    grad.addColorStop(1, SAKURA.body);
+    grad.addColorStop(0, C.bodyLight);
+    grad.addColorStop(1, C.body);
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.ellipse(c.x, c.y, c.rx, c.ry, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = SAKURA.line;
+    ctx.strokeStyle = C.line;
     // 体の輪郭からはみ出した部分は、体と同じ太さの線で縁取る
     ctx.save();
     ctx.beginPath();
@@ -412,7 +435,7 @@ function drawSakuraBack(ctx: CanvasRenderingContext2D): void {
   fillBody(ctx, bodyPath, 4);
 
   // 後頭部の羽毛の線
-  ctx.strokeStyle = SAKURA.line;
+  ctx.strokeStyle = C.line;
   ctx.lineWidth = 0.8;
   ctx.globalAlpha *= 0.6;
   ctx.beginPath();
@@ -434,13 +457,13 @@ function drawSakuraBack(ctx: CanvasRenderingContext2D): void {
     ctx.quadraticCurveTo(12.6, 5.8, 12.2, 11.8);
     ctx.quadraticCurveTo(7.6, 10.8, 6.8, 3.6);
     ctx.closePath();
-    ctx.fillStyle = SAKURA.wing;
+    ctx.fillStyle = C.wing;
     ctx.fill();
-    ctx.strokeStyle = SAKURA.line;
+    ctx.strokeStyle = C.line;
     ctx.lineWidth = 0.9;
     ctx.stroke();
     // 羽の縁取り
-    ctx.strokeStyle = SAKURA.wingFeather;
+    ctx.strokeStyle = C.wingFeather;
     ctx.lineWidth = 0.6;
     ctx.beginPath();
     ctx.moveTo(8.6, 7.2);
@@ -449,7 +472,7 @@ function drawSakuraBack(ctx: CanvasRenderingContext2D): void {
     ctx.restore();
   }
 
-  drawSakuraFlower(ctx, -6.4, -9.6, 4.6, 0.25);
+  if (showFlower) drawSakuraFlower(ctx, -6.4, -9.6, 4.6, 0.25);
 }
 
 /** 横顔の体の輪郭（右向き）。正面と同じ下ぶくれの「おもち」形で、頭だけ進む向きへ少し出す。 */
@@ -472,45 +495,50 @@ function sidePath(ctx: CanvasRenderingContext2D): void {
  * 真横の姿（左右へ進むとき）。dir = 1 で右向き、-1 で左向き（左右反転）。
  * 花飾りは頭の右側に付いているので、右向きなら手前に見え、左向きなら頭の向こう側から少しのぞく。
  */
-function drawSakuraSide(ctx: CanvasRenderingContext2D, dir: number): void {
+function drawSakuraSide(ctx: CanvasRenderingContext2D, dir: number, flap: number): void {
   ctx.save();
   ctx.scale(dir, 1);
 
   // 左向きのときの花飾り：体より先に描いて、頭のうしろに隠す
-  if (dir < 0) drawSakuraFlower(ctx, -1.5, -11.6, 4.4, 0.4);
+  if (showFlower && dir < 0) drawSakuraFlower(ctx, -1.5, -11.6, 4.4, 0.4);
 
   drawTail(ctx, -10.5, 5, -0.55);
 
   fillBody(ctx, sidePath, 2);
 
-  // 翼：体の横に、うしろ下へ向けてたたむ
+  // 翼：体の横に、うしろ下へ向けてたたむ（羽ばたくときは付け根を支点に上へ振り上げる）
+  ctx.save();
+  ctx.translate(-1.6, 4.2);
+  ctx.rotate(flap * 1.9);
+  ctx.translate(1.6, -4.2);
   ctx.beginPath();
   ctx.moveTo(-1.6, 4.2);
   ctx.quadraticCurveTo(-8.6, 2.6, -13.4, 9.6);
   ctx.quadraticCurveTo(-7.4, 12, -1.6, 4.2);
   ctx.closePath();
-  ctx.fillStyle = SAKURA.wing;
+  ctx.fillStyle = C.wing;
   ctx.fill();
-  ctx.strokeStyle = SAKURA.line;
+  ctx.strokeStyle = C.line;
   ctx.lineWidth = 0.9;
   ctx.stroke();
-  ctx.strokeStyle = SAKURA.wingFeather;
+  ctx.strokeStyle = C.wingFeather;
   ctx.lineWidth = 0.6;
   ctx.beginPath();
   ctx.moveTo(-6, 6.4);
   ctx.lineTo(-10.4, 8.6);
   ctx.stroke();
+  ctx.restore();
 
   // ほっぺ・目・くちばし（顔は進む向きの端に寄せる）
-  ctx.fillStyle = SAKURA.cheek;
+  ctx.fillStyle = C.cheek;
   ctx.beginPath();
   ctx.ellipse(8, 2.4, 2.4, 1.5, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = SAKURA.ink;
+  ctx.fillStyle = C.ink;
   ctx.beginPath();
   ctx.arc(8.4, -2.4, 1.45, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = SAKURA.beak;
+  ctx.fillStyle = C.beak;
   ctx.beginPath();
   ctx.moveTo(12.8, -1.8);
   ctx.lineTo(15.8, -0.5);
@@ -519,7 +547,7 @@ function drawSakuraSide(ctx: CanvasRenderingContext2D, dir: number): void {
   ctx.fill();
 
   // 右向きのときの花飾り：手前（頭の横、目のうしろ上）
-  if (dir > 0) drawSakuraFlower(ctx, 2.2, -9.6, 4.6);
+  if (showFlower && dir > 0) drawSakuraFlower(ctx, 2.2, -9.6, 4.6);
 
   ctx.restore();
 }

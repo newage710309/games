@@ -177,10 +177,11 @@ function drawBreak2(ctx: CanvasRenderingContext2D, t: number): void {
     eyes: t > 4.6 ? 'happy' : 'dot',
     puff: t > 4.6 ? 0.5 : 0
   });
-  // ゆきまるくんが横切る（背景）
+  // ゆきまるくんが左から右へ飛んでいく（背景。右向きで羽ばたく）
   const yx = -60 + clamp01((t - 3) / 3) * (WIDTH + 120);
   const yy = 220 + Math.sin(t * 6) * 10;
-  drawStudent(ctx, yx, yy, 'yukimaru', { front: true, scale: 1.4 });
+  const flap = (Math.sin(t * 22) + 1) / 2;
+  drawSakura(ctx, yx, yy, { view: 'right', bird: 'yukimaru', scale: 1.5, flap, shadow: false });
 
   title(ctx, 'きゅうしょくまえ', 'つぎは 3じかんめ テスト！', t);
 }
@@ -249,12 +250,52 @@ function drawEnd1(ctx: CanvasRenderingContext2D, t: number): void {
   title(ctx, 'おなか いっぱい！', 'もっと たべられるかな？', t);
 }
 
-/** いちばん上（クリア）：放課後にみんなでおやつ。 */
+/** 給食のおぼん（カレー・パン・牛乳）。(x, y) が中心。 */
+function drawTray(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, eaten = 0): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+  ctx.fillStyle = '#bfe3c8';
+  ctx.strokeStyle = '#6a9a78';
+  ctx.lineWidth = 1.2;
+  rr(ctx, -30, -12, 60, 24, 5);
+  ctx.fill();
+  ctx.stroke();
+  // カレー（食べた量だけ減る）
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.ellipse(-12, 0, 13, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#9aa';
+  ctx.stroke();
+  if (eaten < 1) {
+    ctx.fillStyle = '#c98a2e';
+    ctx.beginPath();
+    ctx.ellipse(-12, 0, 10 * (1 - eaten * 0.8), 5 * (1 - eaten * 0.8), 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // パン
+  if (eaten < 0.6) {
+    ctx.fillStyle = '#e8b870';
+    rr(ctx, 5, -8, 13, 9, 4);
+    ctx.fill();
+  }
+  // 牛乳
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = '#7a9ac0';
+  ctx.fillRect(20, -10, 7, 14);
+  ctx.strokeRect(20, -10, 7, 14);
+  ctx.fillStyle = '#7ab0e8';
+  ctx.fillRect(20, -4, 7, 4);
+  ctx.restore();
+}
+
+/** いちばん上（クリア）：食べすぎて、給食が入らない。 */
 function drawEnd2(ctx: CanvasRenderingContext2D, t: number): void {
-  // 夕方の教室
+  // 昼の教室
   const g = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-  g.addColorStop(0, '#f6d7a8');
-  g.addColorStop(1, '#e9b77c');
+  g.addColorStop(0, '#fbf1dc');
+  g.addColorStop(1, '#f0dcb8');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
   ctx.fillStyle = '#2f6b52';
@@ -262,38 +303,79 @@ function drawEnd2(ctx: CanvasRenderingContext2D, t: number): void {
   ctx.strokeStyle = '#8a6444';
   ctx.lineWidth = 8;
   ctx.strokeRect(60, 140, 360, 110);
-  ctx.font = `bold 26px sans-serif`;
-  text(ctx, 'たくさん たべたね！', 240, 195, 24, 'rgba(250,250,240,0.92)', true);
+  text(ctx, 'きょうの きゅうしょく', 240, 172, 18, 'rgba(250,250,240,0.92)', true);
+  text(ctx, 'カレー・パン・ぎゅうにゅう', 240, 212, 20, 'rgba(250,250,240,0.92)', true);
   ctx.fillStyle = '#c8955e';
   ctx.fillRect(0, 420, WIDTH, HEIGHT - 420);
 
-  // 先生もにっこり
-  drawOwl(ctx, 400, 420, { scale: 1.6, turn: 1 });
-
-  // 真ん中の木の実の山
-  ctx.fillStyle = '#7fb069';
-  ctx.beginPath();
-  ctx.ellipse(240, 500, 90, 22, 0, 0, Math.PI * 2);
-  ctx.fill();
-  for (let k = 0; k < 26; k++) {
-    const nx = 170 + ((k * 37) % 140);
-    const ny = 494 - Math.floor(k / 6) * 7 + (k % 2) * 3;
-    ctx.fillStyle = k % 3 === 0 ? '#b5773a' : '#3e3a36';
-    ctx.beginPath();
-    ctx.ellipse(nx, ny, 5, 6, k, 0, Math.PI * 2);
-    ctx.fill();
+  // 先生もびっくり
+  drawOwl(ctx, 412, 424, { scale: 1.5, turn: 1 });
+  if (t > 3.2) {
+    ctx.save();
+    ctx.globalAlpha = ease((t - 3.2) / 0.3);
+    outlinedText(ctx, 'あらあら', 400, 300, 16, '#ffffff', '#6a4424');
+    ctx.restore();
   }
-  const hop = (p: number): number => Math.abs(Math.sin(t * 5 + p)) * -8;
-  drawStudent(ctx, 90, 470 + hop(0), 'suzume', { front: true, scale: 2, happy: true });
-  drawStudent(ctx, 150, 560 + hop(1), 'mejiro', { front: true, scale: 2, happy: true });
-  drawStudent(ctx, 390, 560 + hop(2), 'hiyo', { front: true, scale: 2, happy: true });
-  drawStudent(ctx, 320, 575 + hop(3), 'yukimaru', { front: true, scale: 2, happy: true });
-  drawSakura(ctx, 240, 575 + hop(4), { scale: 2.8, eyes: 'happy', puff: 0.5 + Math.sin(t * 8) * 0.2 });
 
-  // 紙ふぶき
-  for (let k = 0; k < 40; k++) {
+  // くっつけた机
+  ctx.fillStyle = '#d9a86c';
+  ctx.strokeStyle = '#6a4424';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(40, 470);
+  ctx.lineTo(440, 470);
+  ctx.lineTo(460, 520);
+  ctx.lineTo(20, 520);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#b07c48';
+  ctx.fillRect(20, 520, 440, 14);
+
+  // クラスメイトはもりもり食べる
+  const bob = (p: number): number => Math.abs(Math.sin(t * 6 + p)) * -5;
+  const kids = [
+    ['suzume', 70],
+    ['mejiro', 150],
+    ['hiyo', 330],
+    ['yukimaru', 410]
+  ] as const;
+  for (const [i, [k, x]] of kids.entries()) {
+    drawStudent(ctx, x, 448 + bob(i), k, { front: true, scale: 2, happy: true });
+    drawTray(ctx, x, 494, 1.05, clamp01((t - 1 - i * 0.3) / 5));
+  }
+
+  // さくらちゃん：まんまるで、給食に手がつけられない
+  const wobble = Math.sin(t * 3) * 0.02;
+  drawSakura(ctx, 240, 430, { scale: 3.3, squash: 0.16 + wobble, puff: 0.9, eyes: t > 4 ? 'happy' : 'dot', shadow: false });
+  drawTray(ctx, 240, 500, 1.3, 0);
+  // あせ
+  ctx.fillStyle = '#8fd0ff';
+  const sx = 290;
+  const sy = 360 + ((t * 30) % 20);
+  ctx.beginPath();
+  ctx.moveTo(sx, sy - 10);
+  ctx.quadraticCurveTo(sx - 6, sy, sx, sy + 4);
+  ctx.quadraticCurveTo(sx + 6, sy, sx, sy - 10);
+  ctx.fill();
+  if (t > 1.2) {
+    ctx.save();
+    ctx.globalAlpha = ease((t - 1.2) / 0.4);
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#6a3448';
+    ctx.lineWidth = 2;
+    rr(ctx, 120, 300, 176, 40, 14);
+    ctx.fill();
+    ctx.stroke();
+    text(ctx, 'もう たべられない…', 208, 320, 16, '#6a3448', true);
+    ctx.restore();
+  }
+  if (t > 4.4 && t < 6) outlinedText(ctx, 'けぷっ', 300, 400, 20, '#ffffff', '#6a3448');
+
+  // きらきら（クリアのお祝い）
+  for (let k = 0; k < 24; k++) {
     const px = (k * 71.3 + Math.sin(t + k) * 20) % WIDTH;
-    const py = ((k * 43.7 + t * (60 + (k % 5) * 20)) % (HEIGHT + 20)) - 20;
+    const py = ((k * 43.7 + t * (50 + (k % 5) * 16)) % (HEIGHT + 20)) - 20;
     ctx.fillStyle = ['#f283a8', '#ffd84a', '#8cc4ff', '#9fe0a0'][k % 4]!;
     ctx.save();
     ctx.translate(px, py);
@@ -301,5 +383,5 @@ function drawEnd2(ctx: CanvasRenderingContext2D, t: number): void {
     ctx.fillRect(-3, -2, 6, 4);
     ctx.restore();
   }
-  title(ctx, 'みんなで おやつ！', 'ぜんぶ クリア！', t);
+  title(ctx, 'きゅうしょくが はいらない！', 'たべすぎちゃった… ぜんぶ クリア！', t);
 }

@@ -92,7 +92,7 @@ export class Game {
   patrol: Patrol | null = null;
   /** ポーズ前の場面。 */
   pausedFrom: Phase = 'playing';
-  /** エンディングの種類（0 = もうすこし、1 = おなかいっぱい、2 = みんなでおやつ＝クリア）。 */
+  /** エンディングの種類（0 = もうすこし、1 = おなかいっぱい、2 = 食べすぎて給食が入らない＝クリア）。 */
   endingTier = 0;
 
   // さくらちゃん
