@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "sakura-tsumamigui",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "004tsumamigui", "run", "dev", "--", "--port", "5176", "--strictPort"],
+      "port": 5176
+    },
+    {
       "name": "sakura-yukidaruma",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "003yukidaruma", "run", "dev", "--", "--port", "5175", "--strictPort"],

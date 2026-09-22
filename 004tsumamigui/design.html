@@ -1,0 +1,18 @@
+<!doctype html>
+<!-- デザイン確認用のページ（開発時だけ使う。ビルドには含めない）。 -->
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>デザイン確認 - さくらちゃんのこっそりつまみぐい</title>
+    <style>
+      body { margin: 0; background: #1b1f2a; color: #dde; font-family: system-ui, sans-serif; }
+      canvas { display: block; margin: 12px auto; max-width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <canvas id="screens"></canvas>
+    <canvas id="sheet"></canvas>
+    <canvas id="faces"></canvas>
+    <script type="module" src="/src/design.ts"></script>
+  </body>
+</html>
