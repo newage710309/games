@@ -11,6 +11,8 @@ const FLOOR_Y = ROOM_Y + 170;
 export const TEACHER_X = 300;
 export const TEACHER_Y = ROOM_Y + 226;
 export const TEACHER_SCALE = 1.9;
+/** 見回りの先生の足元の高さ（先生より手前、机の天板の奥のふちより少し奥）。 */
+const PATROL_Y = ROOM_Y + 246;
 
 export interface RoomState {
   time: number;
@@ -126,7 +128,12 @@ export function drawRoom(ctx: CanvasRenderingContext2D, s: RoomState): void {
     speech(ctx, TEACHER_X - 58, TEACHER_Y - 108, s.owlSay);
   }
 
-  // 見回りの先生は生徒の列の手前を歩く（生徒より奥に描くと隠れて見えないので、生徒の前に描く）
+  // 見回りの先生は、黒板と机のあいだ（机の前）を歩く。机と生徒より先に描いて、足元は机と生徒に隠す。
+  const p = s.patrol;
+  if (p) {
+    drawPatrol(ctx, p.x, PATROL_Y, { scale: 2, facing: p.facing, walk: p.walk, looking: p.looking, warn: p.warn });
+  }
+
   // 生徒の列（後ろ姿）
   const row: { x: number; kind: StudentKind }[] = [
     { x: 58, kind: 'suzume' },
@@ -145,12 +152,6 @@ export function drawRoom(ctx: CanvasRenderingContext2D, s: RoomState): void {
   // さくらちゃんの後ろ姿（つまみ食い中は少し頭を下げる）
   drawSakura(ctx, 240, deskY - 6 + (s.sakuraDip ?? 0) * 7, { view: 'back', scale: 1.75, shadow: false });
   for (const x of seats) drawChairBack(ctx, x, deskY);
-
-  if (s.patrol) {
-    const p = s.patrol;
-    if (p.looking) drawSightCone(ctx, p.x, TEACHER_Y + 6);
-    drawPatrol(ctx, p.x, TEACHER_Y + 36, { scale: 2, facing: p.facing, walk: p.walk, looking: p.looking, warn: p.warn });
-  }
 
   ctx.restore();
 }
@@ -308,20 +309,6 @@ function speech(ctx: CanvasRenderingContext2D, x: number, y: number, s: string):
   ctx.lineTo(x + w / 2 - 4, y + 11);
   ctx.fill();
   text(ctx, s, x, y, 15, '#4a3326', true);
-}
-
-/** 見回りの先生の「見ている範囲」（手前＝さくらちゃんのほうへ広がる扇形）。 */
-function drawSightCone(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createLinearGradient(0, y, 0, y + 90);
-  g.addColorStop(0, 'rgba(255,220,90,0.55)');
-  g.addColorStop(1, 'rgba(255,220,90,0)');
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.moveTo(x, y - 6);
-  ctx.lineTo(x + 90, y + 90);
-  ctx.lineTo(x - 90, y + 90);
-  ctx.closePath();
-  ctx.fill();
 }
 
 // --- さくらちゃんの席（アップ） ---------------------------------------------
