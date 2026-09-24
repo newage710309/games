@@ -111,7 +111,7 @@ export function correctDir(g: Guest): Dir {
 /** まちがえたときの、画面に出す見出しと説明。 */
 export function missMessage(g: Guest, reason: MissReason): [string, string] {
   if (reason === 'timeout') {
-    const name = g.type === 'snow' ? 'ゆきだるま' : ANIMAL_NAME[g.kind];
+    const name = g.type === 'snow' ? 'ゆきだるま' : `${ANIMAL_NAME[g.kind]}さん`;
     return ['まちくたびれちゃった…', `${name}を またせすぎちゃった`];
   }
   if (g.type === 'snow') {
@@ -119,9 +119,9 @@ export function missMessage(g: Guest, reason: MissReason): [string, string] {
       ? ['ゆきだるま だった！', 'ゆきだるまは おことわり だよ']
       : ['ゆきだるま だった！', `「${DISGUISE_NAME[g.disguise]}」に だまされちゃった…`];
   }
-  const name = ANIMAL_NAME[g.kind];
+  const name = `${ANIMAL_NAME[g.kind]}さん`;
   if (correctDir(g) === 'left') return ['とり だった！', `${name}は そらの かいじょう だよ`];
-  if (g.kind === 'momonga') return ['けもの だった！', 'モモンガは とぶけど けもの だよ'];
+  if (g.kind === 'momonga') return ['けもの だった！', 'エゾモモンガさんは とぶけど けもの だよ'];
   return ['けもの だった！', `${name}は もりの かいじょう だよ`];
 }
 
