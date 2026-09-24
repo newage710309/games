@@ -2,6 +2,18 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "sakura-annai",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "005annai", "run", "dev", "--", "--port", "5177", "--strictPort"],
+      "port": 5177
+    },
+    {
+      "name": "png-receiver",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:/Users/fwl/AppData/Local/Temp/claude/E--dev-games/a8165d87-6824-4954-b498-9f0e44de4806/scratchpad/png-receiver.mjs", "C:/Users/fwl/AppData/Local/Temp/claude/E--dev-games/a8165d87-6824-4954-b498-9f0e44de4806/scratchpad", "5190"],
+      "port": 5190
+    },
+    {
       "name": "sakura-tsumamigui",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "004tsumamigui", "run", "dev", "--", "--port", "5176", "--strictPort"],
