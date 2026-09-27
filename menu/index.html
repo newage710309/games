@@ -6,12 +6,29 @@
   ゲームを追加するときは、下の <li class="game"> を 1 つ複製して書き換え、
   「準備中」のカードの No. を 1 つ進める（不要になったら削除する）。
   サムネイルは各ゲームの public/thumbnail.webp（ビルドでゲームのフォルダ直下に出る）。
+  SNS で共有したときのプレビュー画像（OGP）は、各ゲームの public/og.jpg とこのフォルダの og.jpg（1200×630）。
+  公開するときは og.jpg も files/games/og.jpg にコピーする。
 -->
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>ゲーム｜ラピッド・アプリケーションズ</title>
+    <!-- SNS で共有したときのプレビュー（OGP） -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:site_name" content="ラピッド・アプリケーションズ" />
+    <meta property="og:title" content="さくらちゃん シリーズ｜ブラウザで遊べるミニゲーム" />
+    <meta property="og:description" content="桜色のシマエナガ「さくらちゃん」のミニゲーム集。インストール不要で、PC でもスマホでもブラウザだけで遊べます。" />
+    <meta property="og:url" content="https://rapid-apps.co.jp/games/" />
+    <meta property="og:image" content="https://rapid-apps.co.jp/games/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="さくらちゃん シリーズ｜ブラウザで遊べるミニゲーム" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="さくらちゃん シリーズ｜ブラウザで遊べるミニゲーム" />
+    <meta name="twitter:description" content="桜色のシマエナガ「さくらちゃん」のミニゲーム集。インストール不要で、PC でもスマホでもブラウザだけで遊べます。" />
+    <meta name="twitter:image" content="https://rapid-apps.co.jp/games/og.jpg" />
     <meta name="description" content="ブラウザだけで遊べるミニゲーム。インストール不要で、PC でもスマホでも遊べます。" />
     <meta name="theme-color" content="#050c1a" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🎮</text></svg>" />
