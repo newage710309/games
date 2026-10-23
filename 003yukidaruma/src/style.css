@@ -116,10 +116,10 @@ kbd {
     justify-content: flex-start;
   }
 
-  .hint { display: none; }
+  .hint .keys { display: none; }
 
-  /* 盤面の幅。下の十字キーと余白を差し引いた残りの高さで最大化する。 */
-  #game { width: min(calc(100vw - 16px), calc((100dvh - var(--pad) - 36px) * 480 / 640)); }
+  /* 盤面の幅。下の十字キー・一覧リンクの行と余白を差し引いた残りの高さで最大化する。 */
+  #game { width: min(calc(100vw - 16px), calc((100dvh - var(--pad) - 64px) * 480 / 640)); }
 
   #pad {
     display: block;
@@ -150,4 +150,11 @@ kbd {
   }
 
   #pad { margin: 0; }
+
+  /* 横持ちは盤面の上下に余白がないので、一覧リンクは画面の左上に置く。 */
+  .hint {
+    position: fixed;
+    top: calc(6px + env(safe-area-inset-top));
+    left: calc(10px + env(safe-area-inset-left));
+  }
 }

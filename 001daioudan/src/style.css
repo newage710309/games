@@ -130,13 +130,13 @@ kbd {
 
 @media (pointer: coarse) {
   #pad { display: grid; }
-  .hint { display: none; }
+  .hint .keys { display: none; }
 
   #app { gap: 10px; padding-top: calc(6px + env(safe-area-inset-top)); }
 
-  /* D-Pad の高さ（2 段 + 余白）を差し引いて盤面を最大化する。 */
+  /* D-Pad の高さ（2 段 + 余白）と一覧リンクの行を差し引いて盤面を最大化する。 */
   #game {
-    width: min(calc(100vw - 16px), calc((100dvh - 190px) * 520 / 600));
+    width: min(calc(100vw - 16px), calc((100dvh - 220px) * 520 / 600));
   }
 }
 
@@ -161,4 +161,11 @@ kbd {
   }
 
   .pad-btn { width: 56px; height: 56px; }
+
+  /* 横持ちは盤面の上下に余白がないので、一覧リンクは画面の左上に置く。 */
+  .hint {
+    position: fixed;
+    top: calc(6px + env(safe-area-inset-top));
+    left: calc(10px + env(safe-area-inset-left));
+  }
 }

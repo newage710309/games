@@ -87,6 +87,7 @@ kbd {
  * そのため盤面の上（縦持ち）または横の上端（横持ち）に置く。消音はポーズ画面の中にある。
  */
 #controls { display: none; }
+#controls .to-menu { display: none; }
 
 .ctl-btn {
   height: 36px;
@@ -120,8 +121,11 @@ kbd {
   #controls {
     display: flex;
     width: var(--board-w);
-    justify-content: flex-end; /* 盤面の右上にそろえる */
+    justify-content: space-between; /* 一覧リンクは左上、ポーズは右上 */
+    align-items: center;
   }
+
+  #controls .to-menu { display: inline; font-size: 13px; }
 
   .hint { display: none; }
 
@@ -148,5 +152,9 @@ kbd {
     order: 1; /* HTML では盤面より前にあるが、横持ちでは盤面の右に出す */
     width: auto;
     align-self: flex-start;
+    /* 横持ちはポーズの下に一覧リンクを並べる */
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 14px;
   }
 }

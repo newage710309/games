@@ -77,3 +77,10 @@ function frame(now: number): void {
 }
 
 requestAnimationFrame(frame);
+
+// 「ゲーム一覧」リンクは、遊んでいる最中の押しまちがいで抜けないように確認してから移動する。
+document.querySelectorAll<HTMLAnchorElement>('.to-menu').forEach((link) => {
+  link.addEventListener('click', (e) => {
+    if (!window.confirm('ゲームをやめて、ゲーム一覧にもどりますか？')) e.preventDefault();
+  });
+});
