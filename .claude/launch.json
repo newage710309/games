@@ -2,6 +2,21 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "sakura-oshikura",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "007oshikura",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5179",
+        "--strictPort"
+      ],
+      "port": 5179
+    },
+    {
       "name": "sakura-rushhour",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -35,8 +50,8 @@
       "name": "png-receiver",
       "runtimeExecutable": "node",
       "runtimeArgs": [
-        "C:/Users/fwl/AppData/Local/Temp/claude/E--dev-games/a8165d87-6824-4954-b498-9f0e44de4806/scratchpad/png-receiver.mjs",
-        "C:/Users/fwl/AppData/Local/Temp/claude/E--dev-games/a8165d87-6824-4954-b498-9f0e44de4806/scratchpad",
+        "C:/Users/fwl/AppData/Local/Temp/claude/E--dev-games--claude-worktrees-intelligent-bouman-9da485/50441b9a-0b64-4fad-8d11-b870c6bd9e47/scratchpad/png-receiver.mjs",
+        "C:/Users/fwl/AppData/Local/Temp/claude/E--dev-games--claude-worktrees-intelligent-bouman-9da485/50441b9a-0b64-4fad-8d11-b870c6bd9e47/scratchpad/img",
         "5190"
       ],
       "port": 5190

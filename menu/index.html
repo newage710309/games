@@ -3,8 +3,9 @@
   ゲームメニュー（https://rapid-apps.co.jp/games/）のソース。
   ビルド不要の 1 ファイル。公開するときは会社サイトの files/games/index.html にそのままコピーする。
 
-  ゲームを追加するときは、下の <li class="game"> を 1 つ複製して書き換え、
-  「準備中」のカードの No. を 1 つ進める（不要になったら削除する）。
+  カードは番号の大きい順（新しいゲームが上）。ゲームを追加するときは、下の <li class="game"> を 1 つ複製して書き換え、
+  いちばん上に置く。
+  共有用の QR コードは別ページ（qr.html）。公開するときは files/games/qr.html にもコピーする。
   サムネイルは各ゲームの public/thumbnail.webp（ビルドでゲームのフォルダ直下に出る）。
   SNS で共有したときのプレビュー画像（OGP）は、各ゲームの public/og.jpg とこのフォルダの og.jpg（1200×630）。
   公開するときは og.jpg も files/games/og.jpg にコピーする。
@@ -109,6 +110,20 @@
 
       .lead { margin: 0; color: var(--text); font-size: 15px; }
 
+      /* 見出しの横に、このページを共有するための QR コードのページ（qr.html）へのリンク */
+      .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+      .share {
+        flex: none;
+        padding: 6px 14px;
+        border: 1px solid var(--navy-border);
+        border-radius: 999px;
+        color: var(--cyan);
+        font-size: 13px;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .share:hover, .share:focus-visible { border-color: var(--cyan); }
+
       main { flex: 1; }
 
       /* --- ゲームのカード --- */
@@ -187,19 +202,6 @@
       }
       .play:hover, .play:focus-visible { filter: brightness(1.08); transform: translateY(-1px); }
 
-      /* 準備中のカード */
-      .game.soon {
-        grid-template-columns: 1fr;
-        place-items: center;
-        min-height: 120px;
-        background: transparent;
-        border-style: dashed;
-        color: var(--muted);
-        text-align: center;
-      }
-      .game.soon:hover { border-color: var(--navy-border); box-shadow: none; }
-      .game.soon p { margin: 0; }
-
       footer {
         padding: 20px 0 calc(24px + env(safe-area-inset-bottom));
         color: var(--muted);
@@ -209,7 +211,8 @@
 
       /* スマホ：サムネイルを上、説明を下に縦並び */
       @media (max-width: 600px) {
-        .hero { padding: 28px 0 20px; }
+        .hero { padding: 28px 0 20px; flex-direction: column; align-items: flex-start; gap: 16px; }
+        .share { align-self: flex-start; }
         .game { grid-template-columns: 1fr; gap: 16px; padding: 16px; }
         .thumb { justify-self: center; width: min(240px, 70%); }
         .play { display: block; text-align: center; }
@@ -228,33 +231,137 @@
 
     <main class="wrap">
       <section class="hero">
-        <p class="eyebrow">GAMES</p>
-        <h1>ゲーム</h1>
-        <p class="lead">ブラウザだけで遊べるミニゲーム。インストール不要で、PC でもスマホでも遊べます。</p>
+        <div>
+          <p class="eyebrow">GAMES</p>
+          <h1>ゲーム</h1>
+          <p class="lead">ブラウザだけで遊べるミニゲーム。インストール不要で、PC でもスマホでも遊べます。</p>
+        </div>
+        <a class="share" href="./qr.html">共有用 QR コード ▸</a>
       </section>
 
       <ul class="games">
-        <!-- No.001 さくらちゃんの大横断 -->
+        <!-- No.007 さくらちゃんの おしくらまんじゅう -->
         <li class="game" style="--accent: #f283a8">
-          <a class="thumb" href="./001daioudan/" tabindex="-1" aria-hidden="true">
-            <img src="./001daioudan/thumbnail.webp" alt="" width="520" height="600" decoding="async" />
+          <a class="thumb" href="./007oshikura/" tabindex="-1" aria-hidden="true">
+            <img src="./007oshikura/thumbnail.webp" alt="" width="480" height="640" decoding="async" />
           </a>
           <div>
-            <p class="no">No.001</p>
-            <h2><a href="./001daioudan/">さくらちゃんの大横断</a></h2>
+            <p class="no">No.007</p>
+            <h2><a href="./007oshikura/">さくらちゃんの おしくらまんじゅう</a></h2>
             <p class="desc">
-              桜色のシマエナガ「さくらちゃん」を、車の行き交う道路と流れの速い川を越えて、
-              5 つのおうちまで送り届けよう。
+              2 匹 1 組で落ちてくる森の動物を、同じなかま 4 匹でくっつけて「ぎゅっ」と消そう。
+              おじゃまの雪だるまは、となりで消して溶かす。全 3 面で春をよぼう！
             </p>
             <ul class="tags">
-              <li>アクション</li>
+              <li>落ちものパズル</li>
+              <li>全 3 面</li>
               <li>PC・スマホ対応</li>
             </ul>
             <dl class="howto">
-              <div><dt>PC</dt><dd>矢印キー / WASD で移動、<span class="nw">Space でスタート</span></dd></div>
-              <div><dt>スマホ</dt><dd>スワイプ または 画面の十字ボタン</dd></div>
+              <div><dt>PC</dt><dd>← → で移動・↑ で回す・<span class="nw">↓ ではやく</span></dd></div>
+              <div><dt>スマホ</dt><dd>どこでもスワイプで移動・タップで回す・<span class="nw">下スワイプではやく</span></dd></div>
             </dl>
-            <a class="play" href="./001daioudan/">あそぶ ▶</a>
+            <a class="play" href="./007oshikura/">あそぶ ▶</a>
+          </div>
+        </li>
+
+        <!-- No.006 さくらちゃんのぎゅうぎゅうでんしゃ -->
+        <li class="game" style="--accent: #f283a8">
+          <a class="thumb" href="./006rushhour/" tabindex="-1" aria-hidden="true">
+            <img src="./006rushhour/thumbnail.webp" alt="" width="480" height="640" decoding="async" />
+          </a>
+          <div>
+            <p class="no">No.006</p>
+            <h2><a href="./006rushhour/">さくらちゃんのぎゅうぎゅうでんしゃ</a></h2>
+            <p class="desc">
+              駅員のさくらちゃんが、ドアからあふれるお客さんを電車にぎゅっと押しこむ。
+              ホームの端まであふれたらおしまい！ 全 3 本、ぜんぶ発車させよう。
+            </p>
+            <ul class="tags">
+              <li>アクション</li>
+              <li>全 3 本</li>
+              <li>PC・スマホ対応</li>
+            </ul>
+            <dl class="howto">
+              <div><dt>PC</dt><dd>列をクリック / ← → で移動・<span class="nw">押しこみは自動</span></dd></div>
+              <div><dt>スマホ</dt><dd>列をタップで移動・<span class="nw">押しこみは自動</span></dd></div>
+            </dl>
+            <a class="play" href="./006rushhour/">あそぶ ▶</a>
+          </div>
+        </li>
+
+        <!-- No.005 さくらちゃんの案内係 -->
+        <li class="game" style="--accent: #8fd0ff">
+          <a class="thumb" href="./005annai/" tabindex="-1" aria-hidden="true">
+            <img src="./005annai/thumbnail.webp" alt="" width="480" height="640" decoding="async" />
+          </a>
+          <div>
+            <p class="no">No.005</p>
+            <h2><a href="./005annai/">さくらちゃんの案内係</a></h2>
+            <p class="desc">
+              ゆきまつりのお客さんを、鳥は左・けものは右へ案内。
+              変装してまぎれこむ雪だるまは見やぶって入場お断り！ 全 3 面、1 回まちがえたらおしまい。
+            </p>
+            <ul class="tags">
+              <li>仕分け</li>
+              <li>全 3 面</li>
+              <li>PC・スマホ対応</li>
+            </ul>
+            <dl class="howto">
+              <div><dt>PC</dt><dd>← → で案内・<span class="nw">↑ でおことわり</span></dd></div>
+              <div><dt>スマホ</dt><dd>左右スワイプで案内・<span class="nw">上スワイプでおことわり</span></dd></div>
+            </dl>
+            <a class="play" href="./005annai/">あそぶ ▶</a>
+          </div>
+        </li>
+
+        <!-- No.004 さくらちゃんのこっそりつまみぐい -->
+        <li class="game" style="--accent: #f5b971">
+          <a class="thumb" href="./004tsumamigui/" tabindex="-1" aria-hidden="true">
+            <img src="./004tsumamigui/thumbnail.webp" alt="" width="480" height="640" decoding="async" />
+          </a>
+          <div>
+            <p class="no">No.004</p>
+            <h2><a href="./004tsumamigui/">さくらちゃんのこっそりつまみぐい</a></h2>
+            <p class="desc">
+              授業中、先生に見つからないように木の実をつまみ食い。
+              先生が振り向く前に手を止めよう。全 3 時間、どれだけ多く食べられるかな？
+            </p>
+            <ul class="tags">
+              <li>タイミング</li>
+              <li>全 3 時間</li>
+              <li>PC・スマホ対応</li>
+            </ul>
+            <dl class="howto">
+              <div><dt>PC</dt><dd>クリック / Space を<span class="nw">押している間 食べる</span></dd></div>
+              <div><dt>スマホ</dt><dd>画面のどこでも<span class="nw">押している間 食べる</span></dd></div>
+            </dl>
+            <a class="play" href="./004tsumamigui/">あそぶ ▶</a>
+          </div>
+        </li>
+
+        <!-- No.003 さくらちゃんの雪だるま退治 -->
+        <li class="game" style="--accent: #9fe0ff">
+          <a class="thumb" href="./003yukidaruma/" tabindex="-1" aria-hidden="true">
+            <img src="./003yukidaruma/thumbnail.webp" alt="" width="480" height="640" decoding="async" />
+          </a>
+          <div>
+            <p class="no">No.003</p>
+            <h2><a href="./003yukidaruma/">さくらちゃんの雪だるま退治</a></h2>
+            <p class="desc">
+              氷のブロックを押してすべらせ、雪だるまをはさんでやっつけよう。
+              外の壁をゆらすと、壁ぎわの雪だるまが気絶する。全 3 面、クリアごとにおまけのデモつき。
+            </p>
+            <ul class="tags">
+              <li>パズルアクション</li>
+              <li>全 3 面</li>
+              <li>PC・スマホ対応</li>
+            </ul>
+            <dl class="howto">
+              <div><dt>PC</dt><dd>矢印キー / WASD で移動、<span class="nw">進む先の氷を押す</span></dd></div>
+              <div><dt>スマホ</dt><dd>画面下の十字キー（押したまま指をすべらせて向きを変えられる）</dd></div>
+            </dl>
+            <a class="play" href="./003yukidaruma/">あそぶ ▶</a>
           </div>
         </li>
 
@@ -284,111 +391,27 @@
           </div>
         </li>
 
-        <!-- No.003 さくらちゃんの雪だるま退治 -->
-        <li class="game" style="--accent: #9fe0ff">
-          <a class="thumb" href="./003yukidaruma/" tabindex="-1" aria-hidden="true">
-            <img src="./003yukidaruma/thumbnail.webp" alt="" width="480" height="640" decoding="async" />
-          </a>
-          <div>
-            <p class="no">No.003</p>
-            <h2><a href="./003yukidaruma/">さくらちゃんの雪だるま退治</a></h2>
-            <p class="desc">
-              氷のブロックを押してすべらせ、雪だるまをはさんでやっつけよう。
-              外の壁をゆらすと、壁ぎわの雪だるまが気絶する。全 3 面、クリアごとにおまけのデモつき。
-            </p>
-            <ul class="tags">
-              <li>パズルアクション</li>
-              <li>全 3 面</li>
-              <li>PC・スマホ対応</li>
-            </ul>
-            <dl class="howto">
-              <div><dt>PC</dt><dd>矢印キー / WASD で移動、<span class="nw">進む先の氷を押す</span></dd></div>
-              <div><dt>スマホ</dt><dd>画面下の十字キー（押したまま指をすべらせて向きを変えられる）</dd></div>
-            </dl>
-            <a class="play" href="./003yukidaruma/">あそぶ ▶</a>
-          </div>
-        </li>
-
-        <!-- No.004 さくらちゃんのこっそりつまみぐい -->
-        <li class="game" style="--accent: #f5b971">
-          <a class="thumb" href="./004tsumamigui/" tabindex="-1" aria-hidden="true">
-            <img src="./004tsumamigui/thumbnail.webp" alt="" width="480" height="640" decoding="async" />
-          </a>
-          <div>
-            <p class="no">No.004</p>
-            <h2><a href="./004tsumamigui/">さくらちゃんのこっそりつまみぐい</a></h2>
-            <p class="desc">
-              授業中、先生に見つからないように木の実をつまみ食い。
-              先生が振り向く前に手を止めよう。全 3 時間、どれだけ多く食べられるかな？
-            </p>
-            <ul class="tags">
-              <li>タイミング</li>
-              <li>全 3 時間</li>
-              <li>PC・スマホ対応</li>
-            </ul>
-            <dl class="howto">
-              <div><dt>PC</dt><dd>クリック / Space を<span class="nw">押している間 食べる</span></dd></div>
-              <div><dt>スマホ</dt><dd>画面のどこでも<span class="nw">押している間 食べる</span></dd></div>
-            </dl>
-            <a class="play" href="./004tsumamigui/">あそぶ ▶</a>
-          </div>
-        </li>
-
-        <!-- No.005 さくらちゃんの案内係 -->
-        <li class="game" style="--accent: #8fd0ff">
-          <a class="thumb" href="./005annai/" tabindex="-1" aria-hidden="true">
-            <img src="./005annai/thumbnail.webp" alt="" width="480" height="640" decoding="async" />
-          </a>
-          <div>
-            <p class="no">No.005</p>
-            <h2><a href="./005annai/">さくらちゃんの案内係</a></h2>
-            <p class="desc">
-              ゆきまつりのお客さんを、鳥は左・けものは右へ案内。
-              変装してまぎれこむ雪だるまは見やぶって入場お断り！ 全 3 面、1 回まちがえたらおしまい。
-            </p>
-            <ul class="tags">
-              <li>仕分け</li>
-              <li>全 3 面</li>
-              <li>PC・スマホ対応</li>
-            </ul>
-            <dl class="howto">
-              <div><dt>PC</dt><dd>← → で案内・<span class="nw">↑ でおことわり</span></dd></div>
-              <div><dt>スマホ</dt><dd>左右スワイプで案内・<span class="nw">上スワイプでおことわり</span></dd></div>
-            </dl>
-            <a class="play" href="./005annai/">あそぶ ▶</a>
-          </div>
-        </li>
-
-        <!-- No.006 さくらちゃんのぎゅうぎゅうでんしゃ -->
+        <!-- No.001 さくらちゃんの大横断 -->
         <li class="game" style="--accent: #f283a8">
-          <a class="thumb" href="./006rushhour/" tabindex="-1" aria-hidden="true">
-            <img src="./006rushhour/thumbnail.webp" alt="" width="480" height="640" decoding="async" />
+          <a class="thumb" href="./001daioudan/" tabindex="-1" aria-hidden="true">
+            <img src="./001daioudan/thumbnail.webp" alt="" width="520" height="600" decoding="async" />
           </a>
           <div>
-            <p class="no">No.006</p>
-            <h2><a href="./006rushhour/">さくらちゃんのぎゅうぎゅうでんしゃ</a></h2>
+            <p class="no">No.001</p>
+            <h2><a href="./001daioudan/">さくらちゃんの大横断</a></h2>
             <p class="desc">
-              駅員のさくらちゃんが、ドアからあふれるお客さんを電車にぎゅっと押しこむ。
-              ホームの端まであふれたらおしまい！ 全 3 本、ぜんぶ発車させよう。
+              桜色のシマエナガ「さくらちゃん」を、車の行き交う道路と流れの速い川を越えて、
+              5 つのおうちまで送り届けよう。
             </p>
             <ul class="tags">
               <li>アクション</li>
-              <li>全 3 本</li>
               <li>PC・スマホ対応</li>
             </ul>
             <dl class="howto">
-              <div><dt>PC</dt><dd>列をクリック / ← → で移動・<span class="nw">押しこみは自動</span></dd></div>
-              <div><dt>スマホ</dt><dd>列をタップで移動・<span class="nw">押しこみは自動</span></dd></div>
+              <div><dt>PC</dt><dd>矢印キー / WASD で移動、<span class="nw">Space でスタート</span></dd></div>
+              <div><dt>スマホ</dt><dd>スワイプ または 画面の十字ボタン</dd></div>
             </dl>
-            <a class="play" href="./006rushhour/">あそぶ ▶</a>
-          </div>
-        </li>
-
-        <!-- 準備中（次のゲームを追加したら No. を進めるか、この <li> ごと消す） -->
-        <li class="game soon">
-          <div>
-            <p class="no">No.007</p>
-            <p>次のゲームを準備中…</p>
+            <a class="play" href="./001daioudan/">あそぶ ▶</a>
           </div>
         </li>
       </ul>
