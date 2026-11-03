@@ -2,6 +2,21 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "sakura-yukidama",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "008yukidama",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5180",
+        "--strictPort"
+      ],
+      "port": 5180
+    },
+    {
       "name": "sakura-oshikura",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
