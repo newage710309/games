@@ -2,6 +2,21 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "sakura-enagadango",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "010enagadango",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5182",
+        "--strictPort"
+      ],
+      "port": 5182
+    },
+    {
       "name": "sakura-mochitsuki",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
