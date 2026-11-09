@@ -2,6 +2,21 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "sakura-shutter",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "011shutter",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5183",
+        "--strictPort"
+      ],
+      "port": 5183
+    },
+    {
       "name": "sakura-enagadango",
       "runtimeExecutable": "npm",
       "runtimeArgs": [

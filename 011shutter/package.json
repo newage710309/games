@@ -1,0 +1,22 @@
+{
+  "name": "sakura-shutter",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "さくらちゃんのシャッターチャンス - 森の新聞のカメラマンになって、動き回るさくらちゃんを撮影する全 3 面のゲーム (TypeScript + Vite + Canvas2D)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "bot": "esbuild tools/bot.ts --bundle --platform=node --log-level=warning --outfile=dist-tools/bot.cjs && node dist-tools/bot.cjs",
+    "check-score": "esbuild tools/check-score.ts --bundle --platform=node --log-level=warning --outfile=dist-tools/check-score.cjs && node dist-tools/check-score.cjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
+}
