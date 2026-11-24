@@ -46,7 +46,7 @@ function failureLines(game: Game): [string, string?] {
   }
   const first = `${FOOD_NAME[food]}は 「${level}」 だったよ`;
   const why = c.order ? 'ちゅうもんを よく みてね'
-    : c.refill ? 'おかわりは ちょっとだけ'
+    : c.refill ? 'おかわりは すくなめ'
     : c.hungry ? 'おなかが なってる子は 1だん おおめ'
     : 'からだの おおきさで きめよう';
   return [first, why];

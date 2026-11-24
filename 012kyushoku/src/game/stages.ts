@@ -112,7 +112,7 @@ export function createCustomers(stage: number, random: () => number): Customer[]
       const source = customers[sourceIndex];
       const customer = makeCustomer(source.kind, stage, false, true);
       customer.refillSource = source;
-      if (i === config.refills[0]) customer.hint = 'おかわりは ちょっとだけ';
+      if (i === config.refills[0]) customer.hint = 'おかわりは すくなめ';
       customers.push(customer);
     } else {
       const group = order[i];
@@ -136,7 +136,8 @@ export function createCustomers(stage: number, random: () => number): Customer[]
       const favorite: FoodKind | undefined = previous.kind === 'kitsune' ? 'aburaage' : previous.kind === 'kuma' ? 'honey' : undefined;
       const mode = n % 3;
       const orderSpec = favorite && mode === 1 ? { refuse: favorite }
-        : { food: favorite && mode === 0 ? favorite : 'stew' as FoodKind, level: random() < 0.5 ? 0 : 2, refuse: mode === 2 ? favorite : undefined };
+        // 量の注文は、その子のいつもの量とはちがう量にする（小鳥の「すくなめ」、クマの「おおもり」のような、いつもどおりの注文は出さない）
+        : { food: favorite && mode === 0 ? favorite : 'stew' as FoodKind, level: [0, 1, 2].filter(l => l !== previous.level)[random() < 0.5 ? 0 : 1], refuse: mode === 2 ? favorite : undefined };
       const replacement = makeCustomer(previous.kind, stage, false, false, orderSpec);
       customers[i] = replacement;
       // 入れ替えた客を参照しているおかわりも、新しい客に結び直す。

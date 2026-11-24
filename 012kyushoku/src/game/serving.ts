@@ -36,9 +36,9 @@ export function makeCustomer(kind: KidKind, stage: number, hungry = false, refil
   };
   const food = favorite[kind];
   if (stage > 1 && !refill && food) wants[food] = AMOUNTS[level];
-  // おかわり：シチューすくなめ。好物のある子は好物を少し入れても見のがす。好物のない鳥は「おかわり！」
+  // おかわり：シチューすくなめ。好物のある子は好物を少し入れても見のがす。吹き出しは「シチュー おかわり！」、好物のない鳥は「おかわり！」
   const extras = refill && food ? [food] : undefined;
-  let bubble = refill ? (food ? `${FOOD_NAME[main]} ちょっとだけ！` : 'おかわり！') : undefined;
+  let bubble = refill ? (food ? `${FOOD_NAME[main]} おかわり！` : 'おかわり！') : undefined;
   if (order) {
     const lines: string[] = [];
     if (order.food !== undefined && order.level !== undefined) {
