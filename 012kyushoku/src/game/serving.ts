@@ -16,6 +16,8 @@ export interface Customer {
   bubble?: string;
   hint?: string;
   refillSource?: Customer;
+  /** 入れても入れなくてもよい品（おかわりの子の好物）。点には数えない。 */
+  extras?: FoodKind[];
   wants: Partial<Record<FoodKind, number>>;
 }
 /** がっかりの理由。empty = 鍋がなくなって、その子の分をよそえなかった。 */
@@ -34,7 +36,9 @@ export function makeCustomer(kind: KidKind, stage: number, hungry = false, refil
   };
   const food = favorite[kind];
   if (stage > 1 && !refill && food) wants[food] = AMOUNTS[level];
-  let bubble = refill ? 'ちょっとだけ！' : undefined;
+  // おかわり：シチューすくなめ。好物のある子は好物を少し入れても見のがす。好物のない鳥は「おかわり！」
+  const extras = refill && food ? [food] : undefined;
+  let bubble = refill ? (food ? `${FOOD_NAME[main]} ちょっとだけ！` : 'おかわり！') : undefined;
   if (order) {
     const lines: string[] = [];
     if (order.food !== undefined && order.level !== undefined) {
@@ -47,7 +51,7 @@ export function makeCustomer(kind: KidKind, stage: number, hungry = false, refil
     }
     bubble = lines.join(' ');
   }
-  return { kind, level, hungry, refill, order, bubble, wants };
+  return { kind, level, hungry, refill, order, bubble, wants, extras };
 }
 
 // 品ごとの点を平均し、表示する評価は最も悪い品に合わせる。
@@ -62,7 +66,7 @@ export function judge(
   if (customer.kind === 'snowman' && foods.some((f, i) => FOOD_HOT[f] && bowls[i] >= WRONG_TOLERANCE)) {
     return { rating: 'bad', points: 0, failure: 'hot' };
   }
-  if (foods.some((f, i) => customer.wants[f] === undefined && bowls[i] >= WRONG_TOLERANCE)) {
+  if (foods.some((f, i) => customer.wants[f] === undefined && !customer.extras?.includes(f) && bowls[i] >= WRONG_TOLERANCE)) {
     return { rating: 'bad', points: 0, failure: 'wrong' };
   }
   let worst = 0;

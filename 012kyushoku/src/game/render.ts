@@ -109,7 +109,7 @@ function scene(ctx: CanvasRenderingContext2D, game: Game): void {
     if (x - kidHeight(customer.kind) * 0.5 > WIDTH) continue;
     drawKid(ctx, x, y, customer.kind, { tray: true, t });
     if (customer.hungry) drawHungry(ctx, x, y - kidHeight(customer.kind) - 12, t);
-    if (customer.refill) drawBubble(ctx, 'ちょっとだけ！', x, y - kidHeight(customer.kind) - 22, x, y - kidHeight(customer.kind), 12);
+    if (customer.refill && customer.bubble) drawBubble(ctx, customer.bubble, x, y - kidHeight(customer.kind) - 22, x, y - kidHeight(customer.kind), 12);
   }
   // ミスのとき（がっかり → ゲームオーバー）は、さくらちゃんが驚いた顔になる
   const chefPose = game.screen === 'bad' || game.screen === 'over' ? 'shock'
