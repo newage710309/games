@@ -182,6 +182,8 @@ export function render(ctx: CanvasRenderingContext2D, game: Game): void {
     drawCounter(ctx, 1);
     drawChef(ctx, 120, 470, { pose: 'cheer', scale: 4, t: game.clock });
     drawPot(ctx, { x: 240, y: 522, w: 200, h: 110 }, 'soup', { left: 0.9, low: false, pressed: false, t: game.clock });
+    ctx.fillStyle = 'rgba(10,18,38,0.82)'; ctx.fillRect(0, 0, WIDTH, 40);
+    text(ctx, 'ラピッド・アプリケーションズ', WIDTH / 2, 20, 11, COLOR.muted, true);
     rr(ctx, 30, 66, 420, 136, 16); ctx.fillStyle = 'rgba(15,23,48,.85)'; ctx.fill();
     outlinedText(ctx, 'さくらちゃんの', 240, 100, 26, '#fff', '#2a3668');
     outlinedText(ctx, '給食当番', 240, 152, 44, '#f8c3d2', '#8a2f52');
