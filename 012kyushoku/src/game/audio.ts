@@ -1,14 +1,40 @@
 import type { FoodKind } from './food';
 import { loadMuted, saveMuted } from './storage';
+import { isTouchDevice } from './device';
+
+/**
+ * 全体の音量。各音の volume（0.01〜0.04 ほど）にこれを掛けて鳴らす。
+ * スマホの内蔵スピーカーは非力なので強め（ほかのゲームとほぼ同じ大きさ）。PC は今までどおりの大きさ。
+ */
+const MASTER_GAIN_TOUCH = 4.8;
+const MASTER_GAIN_DESKTOP = 1;
+/** 立ち上がりを一瞬だけ鈍らせて、ブツッというクリックノイズを防ぐ。 */
+const ATTACK = 0.006;
+/** 音量を保つ区間の割合。すぐ減衰させると実効音量が下がって小さく聞こえる。 */
+const SUSTAIN = 0.4;
 
 // 短い合成音を組み合わせる。音声ファイルがなくても端末上で再生できる。
 export class AudioManager {
   muted = loadMuted();
   private context?: AudioContext;
+  private bus?: AudioNode;
 
   unlock(): void {
     try {
-      this.context ??= new AudioContext();
+      if (!this.context) {
+        this.context = new AudioContext();
+        // マスター音量 → リミッター → 出力。音が重なってもクリップしない
+        const master = this.context.createGain();
+        master.gain.value = isTouchDevice() ? MASTER_GAIN_TOUCH : MASTER_GAIN_DESKTOP;
+        const limiter = this.context.createDynamicsCompressor();
+        limiter.threshold.value = -10;
+        limiter.knee.value = 0;
+        limiter.ratio.value = 20;
+        limiter.attack.value = 0.002;
+        limiter.release.value = 0.12;
+        master.connect(limiter).connect(this.context.destination);
+        this.bus = master;
+      }
       if (this.context.state === 'suspended') void this.context.resume();
     } catch { /* Web Audio が使えない端末でもゲームを続ける */ }
   }
@@ -23,10 +49,12 @@ export class AudioManager {
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(frequency, start);
     oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, end), start + duration);
-    gain.gain.setValueAtTime(volume, start);
-    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(volume, start + ATTACK);
+    gain.gain.setValueAtTime(volume, start + duration * SUSTAIN);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain);
-    gain.connect(c.destination);
+    gain.connect(this.bus ?? c.destination);
     oscillator.start(start);
     oscillator.stop(start + duration);
   }

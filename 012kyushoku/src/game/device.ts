@@ -9,3 +9,11 @@ export function resizeBackingStore(canvas: HTMLCanvasElement): void {
   const height = Math.round(HEIGHT * scale);
   if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
 }
+
+const coarsePointer =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(pointer: coarse)')
+    : null;
+
+/** タッチ端末（スマホ・タブレット）かどうか。効果音の音量をここで切り替える。 */
+export const isTouchDevice = (): boolean => coarsePointer?.matches ?? false;
