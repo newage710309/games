@@ -1,0 +1,20 @@
+<!doctype html>
+<!-- 宣伝動画の録画用ページ（開発時だけ使う。ビルドには含めない）。npm run dev で開き、「録画」を押す。 -->
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>宣伝動画 - さくらちゃんの給食当番</title>
+    <style>
+      body { margin: 0; background: #1b1f2a; color: #dde; font-family: system-ui, sans-serif; text-align: center; }
+      canvas { display: block; margin: 8px auto; width: 270px; height: 480px; }
+      button { font-size: 16px; margin: 8px; padding: 6px 18px; }
+    </style>
+  </head>
+  <body>
+    <canvas id="promo" width="1080" height="1920"></canvas>
+    <button id="preview">下見</button>
+    <button id="record">録画</button>
+    <p id="status"></p>
+    <script type="module" src="./promo.ts"></script>
+  </body>
+</html>
