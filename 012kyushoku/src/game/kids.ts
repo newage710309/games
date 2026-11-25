@@ -341,7 +341,7 @@ const RATING_STYLE: Record<Rating, { fill: string; line: string; size: number }>
 };
 
 /** 1 人ごとの評価を、その子の頭の上に出す。age = 出てからの秒数（はじめにぽんと大きくなる）。 */
-export function drawRating(ctx: CanvasRenderingContext2D, x: number, y: number, r: Rating, age = 0.5, points?: number): void {
+export function drawRating(ctx: CanvasRenderingContext2D, x: number, y: number, r: Rating, age = 0.5, points?: number, bonus?: number): void {
   const st = RATING_STYLE[r];
   const pop = age < 0.15 ? 0.6 + (age / 0.15) * 0.55 : age < 0.3 ? 1.15 - ((age - 0.15) / 0.15) * 0.15 : 1;
   const rise = Math.min(age, 1) * 10;
@@ -378,6 +378,14 @@ export function drawRating(ctx: CanvasRenderingContext2D, x: number, y: number, 
     ctx.strokeText(`+${points}`, 0, st.size * 0.9);
     ctx.fillStyle = '#4a3326';
     ctx.fillText(`+${points}`, 0, st.size * 0.9);
+    if (bonus) {
+      // 残り時間ボーナス
+      ctx.font = `bold 11px ${FONT}`;
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeText(`はやい +${bonus}`, 0, st.size * 0.9 + 14);
+      ctx.fillStyle = '#2f7d4f';
+      ctx.fillText(`はやい +${bonus}`, 0, st.size * 0.9 + 14);
+    }
   }
   ctx.restore();
 }

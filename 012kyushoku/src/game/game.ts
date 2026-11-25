@@ -1,5 +1,5 @@
 import { AudioManager } from './audio';
-import { STAGES, SPEED, LIMIT, AMOUNTS, THRESHOLDS, STAR_AVERAGES, CLEAR_BONUS, FULL_BONUS, LOW_KEEP, FIRST_WAIT, WALK_TIME, BAD_TIME, EAT_TIME, createCustomers } from './stages';
+import { STAGES, SPEED, LIMIT, AMOUNTS, THRESHOLDS, STAR_AVERAGES, CLEAR_BONUS, FULL_BONUS, TIME_BONUS, LOW_KEEP, FIRST_WAIT, WALK_TIME, BAD_TIME, EAT_TIME, createCustomers } from './stages';
 import { judge, type Customer, type Failure } from './serving';
 import type { Rating } from './kids';
 import type { FoodKind } from './food';
@@ -10,6 +10,8 @@ export interface ServedKid {
   customer: Customer;
   rating: Rating;
   points: number;
+  /** 残り時間ボーナス。 */
+  bonus: number;
   age: number;
   seat: number;
   departing: boolean;
@@ -38,6 +40,8 @@ export class Game {
   ratingPoints: number[] = [];
   servingTimes: number[] = [];
   waitRatios: number[] = [];
+  /** この面の残り時間ボーナスの合計。 */
+  timeBonus = 0;
   failure?: Failure;
   /** failure が empty のとき、なくなった品。 */
   emptyFood?: FoodKind;
@@ -81,6 +85,7 @@ export class Game {
     this.ratingPoints = [];
     this.servingTimes = [];
     this.waitRatios = [];
+    this.timeBonus = 0;
     this.results = [];
     this.hold = -1;
     this.screen = 'intro';
@@ -161,7 +166,10 @@ export class Game {
     this.ratingPoints.push(result.points);
     this.servingTimes.push(this.waitMax - this.time);
     this.waitRatios.push(Math.max(0, this.time / this.waitMax));
-    this.score += result.points;
+    // 早く渡すほど、残り時間ボーナス（待ちゲージの残りの割合 × 最大 30 点）
+    const bonus = Math.round(TIME_BONUS * Math.max(0, this.time / this.waitMax));
+    this.timeBonus += bonus;
+    this.score += result.points + bonus;
     const occupied = this.results.filter(r => !r.departing);
     let seat = Array.from({ length: 7 }, (_, i) => i).find(i => !occupied.some(r => r.seat === i));
     if (seat === undefined) {
@@ -170,7 +178,7 @@ export class Game {
       oldest.age = 0;
       seat = oldest.seat;
     }
-    this.results.push({ customer, rating: result.rating, points: result.points, age: 0, seat, departing: false });
+    this.results.push({ customer, rating: result.rating, points: result.points, bonus, age: 0, seat, departing: false });
     this.index++;
     this.bowls = this.foods.map(() => 0);
     if (this.index >= this.customers.length) {

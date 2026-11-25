@@ -22,6 +22,8 @@ export const SCORE = [100, 60, 20] as const;
  */
 export const THRESHOLDS = [0.05, 0.12, 0.36] as const;
 export const STAR_AVERAGES = [60, 75, 95] as const;
+/** 残り時間ボーナスの最大（待ちゲージが満タンのまま渡したとき）。残りの割合に比例する。★の判定（平均点）には入れない。 */
+export const TIME_BONUS = 30;
 export const CLEAR_BONUS = 500;
 export const FULL_BONUS = 500;
 /**

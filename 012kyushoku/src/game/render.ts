@@ -137,7 +137,7 @@ function scene(ctx: CanvasRenderingContext2D, game: Game): void {
     const x = FRONT_X + (SEAT_XS[r.seat] - FRONT_X) * r.age;
     const y = QUEUE_Y + (SEAT_Y - QUEUE_Y) * r.age;
     drawKid(ctx, x, y, r.customer.kind, { size: 0.8, reaction: 'happy', t });
-    drawRating(ctx, x, y - kidHeight(r.customer.kind, 0.8) - 22, r.rating, r.age, r.points);
+    drawRating(ctx, x, y - kidHeight(r.customer.kind, 0.8) - 22, r.rating, r.age, r.points, r.bonus);
   }
   drawCounter(ctx, game.stage);
   drawTray(ctx);
@@ -213,9 +213,10 @@ export function render(ctx: CanvasRenderingContext2D, game: Game): void {
     (['perfect', 'good', 'ok'] as const).forEach((rating, i) => {
       const count = game.ratings.filter(r => r === rating).length;
       const points = game.ratings.reduce((sum, value, index) => sum + (value === rating ? game.ratingPoints[index] : 0), 0);
-      line(['ぴったり！', 'いいね', 'まあまあ'][i] + ' × ' + count + '　' + Math.round(points) + 'てん', 215 + i * 30, 15);
+      line(['ぴったり！', 'いいね', 'まあまあ'][i] + ' × ' + count + '　' + Math.round(points) + 'てん', 210 + i * 27, 15);
     });
-    line('さくらちゃん ' + (game.full ? 'おなかいっぱい +500' : 'のこり ' + (game.pots[0] > 0 ? 'すこし' : 'なし')), 315, 14);
+    line('はやさ ボーナス +' + game.timeBonus, 291, 15);
+    line('さくらちゃん ' + (game.full ? 'おなかいっぱい +500' : 'のこり ' + (game.pots[0] > 0 ? 'すこし' : 'なし')), 320, 14);
     line('めんクリア +500', 350, 15);
     line('へいきん ' + Math.round(game.average) + 'てん　ごうけい ' + Math.round(game.score), 420, 15);
     drawChef(ctx, 240, 560, { pose: game.full ? 'full' : game.pots[0] > 0 ? 'little' : 'empty', scale: 3.2, t: game.clock });
