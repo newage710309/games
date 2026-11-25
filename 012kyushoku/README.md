@@ -230,7 +230,12 @@ npm run bot          # 腕前の違うボットを 30 回ずつ走らせて、�
 
 1. `npm run dev` で開発サーバーを立ち上げ、Chrome 系のブラウザで `http://localhost:5173/tools/promo.html` を開く。
 2. **宣伝動画：** 「録画」を押すと、約 12.6 秒の動画を MediaRecorder（mp4 / H.264 + AAC）で録る。
-   - 終わったら「kyushoku_promo.mp4 を保存」から保存し、`promo/kyushoku_promo.mp4` に置く。
+   - 終わったら「kyushoku_promo.mp4 を保存」から保存する。
+   - **保存したままの mp4 は「断片化 MP4」（約 3 秒ずつのかたまり）で、Instagram では最初の 3 秒ほどがループしてしまう。** ffmpeg で、ふつうの MP4（30fps 固定・先頭に目次）に書き出しなおしてから `promo/kyushoku_promo.mp4` に置く：
+
+     ```
+     ffmpeg -i 保存した.mp4 -vf fps=30 -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart promo/kyushoku_promo.mp4
+     ```
    - タブが裏にあると、コマが落ちる。録画のあいだはタブを表に出しておく。
    - 先に一度ページをクリックすると、音が出る。
    - ゲームの場面は、乱数を固定（種 4・9）してボット（じょうず）に遊ばせたもの。テンポよく見せるため、1.45 倍の速さで進めている。
