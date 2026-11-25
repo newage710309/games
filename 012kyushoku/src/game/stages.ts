@@ -22,8 +22,13 @@ export const SCORE = [100, 60, 20] as const;
  */
 export const THRESHOLDS = [0.05, 0.12, 0.36] as const;
 export const STAR_AVERAGES = [60, 75, 95] as const;
-/** 残り時間ボーナスの最大（待ちゲージが満タンのまま渡したとき）。残りの割合に比例する。★の判定（平均点）には入れない。 */
+/**
+ * 残り時間ボーナスの最大（待ちゲージが満タンのまま渡したとき）。
+ * 残り TIME_BONUS_FROM（3/4）〜100% を 0〜30 点に割りあてる。すばやく渡したときだけ付く。★の判定（平均点）には入れない。
+ */
 export const TIME_BONUS = 30;
+/** ボーナスが付きはじめる待ちゲージの残りの割合。これ以下は 0 点。 */
+export const TIME_BONUS_FROM = 0.75;
 export const CLEAR_BONUS = 500;
 export const FULL_BONUS = 500;
 /**
@@ -31,7 +36,8 @@ export const FULL_BONUS = 500;
  * ゆとりを半分より多く使ってしまったら、カタカタして知らせる。
  */
 export const LOW_KEEP = 0.5;
-export const FIRST_WAIT = 25;
+/** ヒントの出る子（と 1 めんの最初の 3 人）は、その面の待ち時間にこれだけ足す（秒）。 */
+export const HINT_EXTRA_WAIT = 2;
 export const WALK_TIME = 0.7;
 export const BAD_TIME = 1.1;
 export const EAT_TIME = 2.8;
@@ -50,11 +56,11 @@ export const STAGES: {
   wait: number;
   groups: Partial<Record<Group, number>>; hungry: number; orders: number; refills: number[];
 }[] = [
-  { foods: ['soup'], count: 12, slack: 0.45, marks: 1, wait: 12,
+  { foods: ['soup'], count: 12, slack: 0.45, marks: 1, wait: 8,
     groups: { bird: 3, risu: 2, usagi: 4, kuma: 3 }, hungry: 3, orders: 0, refills: [] },
-  { foods: ['soup', 'donguri', 'ninjin'], count: 15, slack: 0.35, marks: 0.75, wait: 14,
+  { foods: ['soup', 'donguri', 'ninjin'], count: 15, slack: 0.35, marks: 0.75, wait: 9,
     groups: { bird: 4, risu: 5, usagi: 6 }, hungry: 4, orders: 0, refills: [] },
-  { foods: ['stew', 'aburaage', 'honey', 'kakigori'], count: 18, slack: 0.25, marks: 0.55, wait: 16,
+  { foods: ['stew', 'aburaage', 'honey', 'kakigori'], count: 18, slack: 0.25, marks: 0.55, wait: 10,
     groups: { bird: 4, kitsune: 5, kuma: 4, snowman: 2 }, hungry: 0, orders: 6, refills: [7, 12, 16] }
 ];
 

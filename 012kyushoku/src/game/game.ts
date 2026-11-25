@@ -1,5 +1,5 @@
 import { AudioManager } from './audio';
-import { STAGES, SPEED, LIMIT, AMOUNTS, THRESHOLDS, STAR_AVERAGES, CLEAR_BONUS, FULL_BONUS, TIME_BONUS, LOW_KEEP, FIRST_WAIT, WALK_TIME, BAD_TIME, EAT_TIME, createCustomers } from './stages';
+import { STAGES, SPEED, LIMIT, AMOUNTS, THRESHOLDS, STAR_AVERAGES, CLEAR_BONUS, FULL_BONUS, TIME_BONUS, TIME_BONUS_FROM, LOW_KEEP, HINT_EXTRA_WAIT, WALK_TIME, BAD_TIME, EAT_TIME, createCustomers } from './stages';
 import { judge, type Customer, type Failure } from './serving';
 import type { Rating } from './kids';
 import type { FoodKind } from './food';
@@ -119,7 +119,8 @@ export class Game {
   }
 
   private prepareCustomer(): void {
-    this.waitMax = this.current?.hint || (this.stage === 1 && this.index < 3) ? FIRST_WAIT : STAGES[this.stage - 1].wait;
+    const wait = STAGES[this.stage - 1].wait;
+    this.waitMax = this.current?.hint || (this.stage === 1 && this.index < 3) ? wait + HINT_EXTRA_WAIT : wait;
     this.time = this.waitMax;
     this.walkTime = WALK_TIME;
   }
@@ -166,8 +167,8 @@ export class Game {
     this.ratingPoints.push(result.points);
     this.servingTimes.push(this.waitMax - this.time);
     this.waitRatios.push(Math.max(0, this.time / this.waitMax));
-    // 早く渡すほど、残り時間ボーナス（待ちゲージの残りの割合 × 最大 30 点）
-    const bonus = Math.round(TIME_BONUS * Math.max(0, this.time / this.waitMax));
+    // 早く渡すほど、残り時間ボーナス。ゲージが 3/4 より多く残っているあいだだけ付く
+    const bonus = Math.round(TIME_BONUS * Math.max(0, (this.time / this.waitMax - TIME_BONUS_FROM) / (1 - TIME_BONUS_FROM)));
     this.timeBonus += bonus;
     this.score += result.points + bonus;
     const occupied = this.results.filter(r => !r.departing);
