@@ -1,6 +1,6 @@
 import { FOOD_HOT, FOOD_NAME, type FoodKind } from './food';
 import type { KidKind, Rating } from './kids';
-import { AMOUNTS, SCORE, THRESHOLDS, WRONG_TOLERANCE } from './stages';
+import { AMOUNTS, SCORE, SHORT_LIMIT, THRESHOLDS, WRONG_TOLERANCE } from './stages';
 
 export interface Order {
   food?: FoodKind;
@@ -77,8 +77,8 @@ export function judge(
     if (target === undefined) continue;
     const diff = Math.abs(target - bowls[i]);
     const over = bowls[i] > target;
-    // 食べる品を空のまま渡した、または少なすぎたら、がっかり
-    if (bowls[i] <= 0.001 || (!over && diff > THRESHOLDS[2] + 0.000001)) {
+    // 食べる品を空のまま渡した、または少なすぎたら（1 段階少ない量も）、がっかり
+    if (bowls[i] <= 0.001 || (!over && diff > SHORT_LIMIT + 0.000001)) {
       if (pots[i] <= 0.001) return { rating: 'bad', points: 0, failure: 'empty', emptyFood: foods[i] };
       return { rating: 'bad', points: 0, failure: 'amount' };
     }

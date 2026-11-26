@@ -1,5 +1,5 @@
 import { AudioManager } from './audio';
-import { STAGES, SPEED, LIMIT, AMOUNTS, THRESHOLDS, STAR_AVERAGES, CLEAR_BONUS, FULL_BONUS, TIME_BONUS, TIME_BONUS_FROM, LOW_KEEP, HINT_EXTRA_WAIT, WALK_TIME, BAD_TIME, EAT_TIME, createCustomers } from './stages';
+import { STAGES, SPEED, LIMIT, AMOUNTS, SHORT_LIMIT, STAR_AVERAGES, CLEAR_BONUS, FULL_BONUS, TIME_BONUS, TIME_BONUS_FROM, LOW_KEEP, HINT_EXTRA_WAIT, WALK_TIME, BAD_TIME, EAT_TIME, createCustomers } from './stages';
 import { judge, type Customer, type Failure } from './serving';
 import type { Rating } from './kids';
 import type { FoodKind } from './food';
@@ -105,7 +105,7 @@ export class Game {
     if (!c) return undefined;
     return this.foods.find((food, i) => {
       const want = c.wants[food];
-      return want !== undefined && this.pots[i] < want - THRESHOLDS[2];
+      return want !== undefined && this.pots[i] < want - SHORT_LIMIT;
     });
   }
 
