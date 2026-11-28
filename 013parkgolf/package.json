@@ -1,0 +1,22 @@
+{
+  "name": "sakura-parkgolf",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "さくらちゃんのパークゴルフ - 自分より大きい木のクラブで、坂を読んで 3 つのコース・9 ホールを回るゲーム (TypeScript + Vite + Canvas2D)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "bot": "esbuild tools/bot.ts --bundle --platform=node --log-level=warning --outfile=dist-tools/bot.cjs && node dist-tools/bot.cjs",
+    "promo": "esbuild tools/promo.ts --bundle --platform=node --log-level=warning --outfile=dist-tools/promo.cjs && node dist-tools/promo.cjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
+}

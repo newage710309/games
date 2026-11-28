@@ -2,6 +2,21 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "sakura-parkgolf",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "013parkgolf",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5185",
+        "--strictPort"
+      ],
+      "port": 5185
+    },
+    {
       "name": "sakura-kyushoku",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
